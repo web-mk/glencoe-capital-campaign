@@ -176,43 +176,59 @@ Collapsing to four is a genuine simplification.
 
 ## THE ACTUAL LAUNCH BLOCKER (his #15)
 
-He framed a credit-card option as a preference. It is the gate. Cognito reports
-`PaymentEnabled: false` while the page copy says "Pledge by credit card."
+He framed a credit-card option as a preference. It is the gate. The page copy
+says "Pledge by credit card" and the form cannot currently take one.
 
-**There is no credit-card field in Cognito Forms.** Card fields appear
-automatically once the form contains a field that actually collects payment.
-Connecting Stripe alone does nothing. `TotalPledgeAmount` is currently a plain
-Number field, which charges nothing.
+**Verified against the live schema via the Cognito MCP on Aug 20, 2026.** Full
+technical detail is in DEV_HANDOFF.md under "Payment launch blocker". Summary:
 
-Fix — a **Price field** whose amount is set via the conditional logic builder
-(lightning-bolt icon): equal to `TotalPledgeAmount` only when
-`Payment Method = Credit Card` AND `HowWouldYouLikeToGive = Give in full today`,
-otherwise `$0`. A $0 total means no card section renders, so Check and Other
-pledges submit cleanly without being forced into payment — which solves his #15
-request in the same move. Requires adding a `Payment Method` choice field
-(Credit Card / Check / Other) first.
+- `TotalPledgeAmount` is already a **Currency** field with `CollectPayment: false`.
+  That single property is the blocker. An earlier working assumption in this
+  session — that it was a Number field needing a new Price field added — was
+  wrong. No new field is needed for the charge itself.
+- **Stripe is already connected** (`PaymentAccount: Chabad of Glencoe / Stripe`,
+  `PaymentMode: Live`). `PaymentEnabled: false` at the form level.
+- `RequirePayment` is hardcoded `"true"`, which would demand a card on EVERY
+  submission and break the Check/Other pledge paths. It needs a formula. The form
+  already contains a working formula example in `SaveCustomerCard`.
+- **No `PaymentMethod` field exists** — his Credit Card / Check / Other selector
+  must be created.
+- The `Dedication` enum still reads `Bimah, Entrance Mezuzah - $36,000` and must
+  be renamed to `Bimah - $36,000` or the site's Bimah button stops preselecting.
 
-Docs: https://www.cognitoforms.com/support/3/collecting-payment
-      https://www.cognitoforms.com/support/38/building-forms/form-field-reference/price-field
+### The Cognito MCP is read-only for this
 
-MUST TEST: a $0 submission actually going through without demanding a card;
-one small live card gift; one Check pledge; one installment pledge; confirmation
-email; internal entry data.
+Tools available: get_forms, get_form_schema, entry CRUD, get_file, get_document,
+set_form_availability, generate_form, save_generated_form. **There is no
+update-form tool.** `save_generated_form` creates a NEW form with a new ID, which
+would break the embed URL hardcoded in index.html and app.js. Do not use it on
+form 202. Reading the schema is still much faster and more accurate than clicking
+through the builder.
 
-### Cognito MCP
-Now configured in Claude Code user scope and authorized. It failed initially with
-"does not support dynamic client registration" — fixed by pinning the static
-OAuth client_id from `~/.codex/config.toml`:
+MCP setup notes are in DEV_HANDOFF.md and in the mcp-static-client-id memory.
 
-    claude mcp add --transport http --scope user \
-      --client-id 366c9904-def2-451a-af2f-8e08d751088c \
-      cognito-forms https://mcp.cognitoforms.com/mcp
+### Builder steps
 
-Tools register as `mcp__cognito-forms__*` after a session restart. NOT YET KNOWN
-whether the MCP can write form schema or only read. Form 202 is LIVE and
-collecting pledges — show the client the exact change before making it.
+1. `Total pledge amount` → enable **Collect payment**
+2. Add Choice field `PaymentMethod`: Credit Card / Check / Other
+3. **Require payment** → formula, approximately:
+   `=(YourCommitment.HowWouldYouLikeToGive = "Give in full today") and (YourCommitment.PaymentMethod = "Credit Card")`
+4. Rename Dedication choice to `Bimah - $36,000`
+5. Delete the three generated instructional Content blocks in the Payment section
 
----
+**Untested:** whether a Currency field with Collect Payment on still allows
+submission when Require Payment evaluates false. If it insists on a card anyway,
+condition the charged amount rather than the requirement. Test a Check pledge
+before trusting it.
+
+MUST TEST: Check pledge, Other pledge, installment pledge, one small live card
+gift, confirmation email, internal entry data.
+
+Docs (note: Cognito's public docs describe Price as the payment field type and do
+not clearly document CollectPayment on Currency fields — the live schema is the
+authority):
+https://www.cognitoforms.com/support/3/collecting-payment
+https://www.cognitoforms.com/support/38/building-forms/form-field-reference/price-field
 
 ## Suggested reply strategy
 

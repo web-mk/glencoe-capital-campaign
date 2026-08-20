@@ -162,17 +162,108 @@ The modal is the only intended scroll surface around the form. Avoid adding anot
 
 ## Payment launch blocker
 
-The latest Cognito schema reports `PaymentEnabled: false`. The page copy mentions credit-card payment, but the form is not ready to collect payments until this is configured and tested in Cognito.
+Verified against the live form schema via the Cognito MCP on Aug 20, 2026
+(form 202, schema Version 5, `Metadata.Source: "mcp"`).
 
-Before launch:
+### Corrected diagnosis
 
-1. Enable collection on `Total pledge amount`.
-2. Connect the correct Stripe account.
-3. Collect payment only when `HowWouldYouLikeToGive` is `Give in full today`.
-4. Confirm whether installment choices are follow-up pledges or actual recurring payments.
-5. Move the intended submit and confirmation copy into the real workflow settings.
-6. Remove the generated instructional content blocks after that copy is configured correctly.
-7. Test one small live gift, one pledge, confirmation email delivery, and the internal entry data.
+An earlier note in this file said to "enable collection on Total pledge amount"
+without specifying how, and a working assumption during the Aug 20 session was
+that `TotalPledgeAmount` was a plain Number field requiring a new Price field to
+be added. Both readings were imprecise. The schema shows:
+
+```json
+"DataType": "Currency",
+"FieldType": "Currency",
+"FieldName": "TotalPledgeAmount",
+"CollectPayment": false
+```
+
+It is already a Currency field, and Currency fields carry their own
+`CollectPayment` property. **No Price field needs to be added.** The blocker is
+that one property being `false`.
+
+Note that Cognito's public documentation describes the Price field as the
+payment-collecting field type and does not clearly document `CollectPayment` on
+Currency fields. The live schema is the authority here, not the docs.
+
+### Stripe is already connected
+
+```json
+"PaymentAccount": {
+  "Id": "da929282-c6bc-4478-9693-1a582ad7eec6",
+  "Name": "Chabad of Glencoe",
+  "ProcessorName": "Stripe"
+},
+"PaymentEnabled": false,
+"PaymentMode": "Live"
+```
+
+The gateway is wired up correctly. Nothing is switched on to use it.
+
+### RequirePayment will break pledges as currently set
+
+```json
+"RequirePayment": "true"
+```
+
+This is hardcoded true. Ticking Collect Payment without changing it means every
+submission demands a card, which breaks the Check and Other pledge paths the
+client asked for.
+
+These payment settings accept Cognito `=` formulas. The form already contains a
+working example, which is the syntax to copy:
+
+```
+"SaveCustomerCard": "=(!YourCommitment.HowWouldYouLikeToGive.Contains(\"full\"))"
+```
+
+### No PaymentMethod field exists
+
+The client's request for a Credit Card / Check / Other selector requires creating
+a new Choice field. It is not present in the schema.
+
+### The MCP cannot make these changes
+
+Available tools are `get_forms`, `get_form_schema`, `get_entry`,
+`get_entries_in_view`, `get_entry_views`, `create_entry`, `update_entry`,
+`delete_entry`, `get_file`, `get_document`, `set_form_availability`,
+`generate_form`, and `save_generated_form`.
+
+There is no update-form tool. `save_generated_form` CREATES a form from a
+`generate_form` session; running it would produce a new form with a new ID and
+break the embed URL hardcoded in `index.html` and `app.js`. Do not use it to try
+to edit form 202. The MCP is read-only for schema purposes, which is still
+useful — one `get_form_schema` call is faster and more accurate than clicking
+through the builder.
+
+### Steps to complete in the Cognito builder
+
+1. Select `Total pledge amount` and enable **Collect payment**.
+2. Add a Choice field `PaymentMethod` with options Credit Card, Check, Other.
+3. Set **Require payment** to a formula so a card is only demanded for card
+   gifts paid in full, approximately:
+   `=(YourCommitment.HowWouldYouLikeToGive = "Give in full today") and (YourCommitment.PaymentMethod = "Credit Card")`
+4. Rename the `Dedication` choice `Bimah, Entrance Mezuzah - $36,000` to
+   `Bimah - $36,000` to match the page. Until this is done the Bimah button will
+   not preselect. See the Cognito Forms integration section above.
+5. Delete the three generated instructional Content blocks in the Payment
+   section ("Secure payment note", "Complete My Commitment", "Confirmation
+   message") once the real workflow copy is configured.
+6. Confirm whether installment choices are follow-up pledges or actual recurring
+   payments. `SaveCustomerCard` currently saves the card for non-"full"
+   selections, which implies later charging.
+
+### Untested assumption in step 3
+
+It is confirmed that `RequirePayment` accepts a formula. It is NOT confirmed
+whether a Currency field with Collect Payment enabled will allow submission when
+Require Payment evaluates false, or whether it still insists on a card because
+the field carries a non-zero amount. If it insists, condition the charged amount
+rather than the requirement.
+
+Test before trusting: a Check pledge, an Other pledge, an installment pledge, one
+small live card gift, confirmation email delivery, and the internal entry data.
 
 Do not represent card processing as live until those checks pass.
 
