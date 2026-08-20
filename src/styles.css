@@ -123,6 +123,8 @@ h1, h2, h3 { text-wrap: balance; }
 .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 32px; background: rgba(250,246,240,0.14); }
 .stats-grid > div { display: grid; padding: 22px 26px; background: var(--ink); }
 .stats-grid strong { font-family: "Cormorant Garamond", serif; font-size: 30px; font-weight: 400; }
+.locally-funded { display: block; max-width: 62em; margin: 30px 0 0; padding-left: clamp(18px, 2vw, 26px); border-left: 2px solid var(--gold); color: rgba(250,246,240,0.72); font-size: clamp(16px, 1.35vw, 20px); font-weight: 300; line-height: 1.62; }
+.locally-funded strong { color: var(--gold-light); font-family: "Cormorant Garamond", serif; font-size: clamp(20px, 1.9vw, 27px); font-style: italic; font-weight: 400; }
 
 .section-light { padding: clamp(70px, 8vw, 120px) 0; background: var(--cream); }
 .story-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(40px, 5vw, 80px); align-items: center; }
@@ -178,18 +180,20 @@ h1, h2, h3 { text-wrap: balance; }
 .financials .financial-highlight { color: var(--gold-light); }
 .dedication-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(26px, 3vw, 44px); }
 .dedication-group h3 { margin: 0; padding-bottom: 12px; border-bottom: 1px solid rgba(232,201,130,0.35); color: var(--gold-light); font-family: "Cormorant Garamond", serif; font-size: 25px; font-style: italic; font-weight: 400; }
-.dedication-group button, .dedication-group .reserved { display: flex; width: 100%; align-items: baseline; justify-content: space-between; gap: 12px; padding: 13px 0; border: 0; border-bottom: 1px solid rgba(250,246,240,0.12); color: var(--cream); background: none; text-align: left; }
+.dedication-group button { display: flex; width: 100%; align-items: baseline; justify-content: space-between; gap: 12px; padding: 13px 0; border: 0; border-bottom: 1px solid rgba(250,246,240,0.12); color: var(--cream); background: none; text-align: left; }
 .dedication-group button { cursor: pointer; transition: color 0.15s; }
 .dedication-group button:hover { color: var(--gold-light); }
-.dedication-group button span, .dedication-group .reserved span { font-weight: 300; }
+.dedication-group button span { font-weight: 300; }
 .dedication-group button strong { font-family: "Cormorant Garamond", serif; font-size: 19px; font-weight: 400; white-space: nowrap; }
-.dedication-group .reserved { opacity: 0.55; }
-.dedication-group .reserved strong { color: var(--gold); font-size: 12px; font-weight: 400; letter-spacing: 0.16em; text-transform: uppercase; }
+.dedication-premier { display: grid; gap: 5px; margin: 18px 0 6px; padding: 18px 20px; border: 1px solid rgba(232,201,130,0.45); border-radius: 2px; background: rgba(232,201,130,0.07); }
+.dedication-premier span { font-family: "Cormorant Garamond", serif; font-size: 24px; font-weight: 400; line-height: 1.15; }
+.dedication-premier strong { color: var(--gold); font-size: 12px; font-weight: 400; letter-spacing: 0.16em; text-transform: uppercase; }
+.dedication-premier small { color: rgba(250,246,240,0.5); font-size: 13px; font-weight: 300; line-height: 1.5; }
 .recognition { margin-top: clamp(46px, 5vw, 72px); padding-top: clamp(36px, 4vw, 52px); border-top: 1px solid rgba(250,246,240,0.16); }
 .recognition-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 12px 30px; }
 .recognition-heading > p:last-child, .recognition-note { color: rgba(250,246,240,0.55); font-size: 15px; font-weight: 300; }
-.recognition-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: rgba(250,246,240,0.14); }
-.recognition-grid button { display: grid; gap: 5px; padding: 18px 20px; border: 0; color: var(--cream); background: var(--ink); text-align: left; cursor: pointer; transition: background 0.15s; }
+.recognition-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(250,246,240,0.14); }
+.recognition-grid button { display: grid; gap: 6px; padding: 22px 22px; border: 0; color: var(--cream); background: var(--ink); text-align: left; cursor: pointer; transition: background 0.15s; }
 .recognition-grid button:hover { background: #20161a; }
 .recognition-grid strong { font-family: "Cormorant Garamond", serif; font-size: 22px; font-weight: 400; }
 .recognition-grid span { color: rgba(250,246,240,0.6); font-size: 14px; font-weight: 300; }
@@ -412,7 +416,6 @@ footer { padding: clamp(44px, 5vw, 70px) 0; color: rgba(250,246,240,0.6); backgr
   .impact-card:last-child { grid-column: 1 / -1; max-width: calc(50% - 12px); }
   .dedication-grid { grid-template-columns: repeat(2, 1fr); }
   .recognition-grid { grid-template-columns: repeat(2, 1fr); }
-  .recognition-grid button:last-child { grid-column: 1 / -1; }
 }
 
 @media (max-width: 720px) {
@@ -434,7 +437,6 @@ footer { padding: clamp(44px, 5vw, 70px) 0; color: rgba(250,246,240,0.6); backgr
   .impact-card:last-child { grid-column: auto; max-width: none; }
   .dedication-grid { grid-template-columns: 1fr; }
   .recognition-grid { grid-template-columns: 1fr 1fr; }
-  .recognition-grid button:last-child { grid-column: auto; }
   .financials > div { align-items: flex-start; }
   .footer-top { flex-direction: column; }
   .footer-top > p { text-align: left; }
