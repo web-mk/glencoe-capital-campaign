@@ -13,8 +13,10 @@
   var modal = document.getElementById("pledge-modal");
   var panel = modal.querySelector(".modal-panel");
   var closeButton = modal.querySelector(".modal-close");
-  var cognitoHost = document.getElementById("cognito-form");
-  var cognitoLoadPromise = null;
+  var cognitoFrame = document.getElementById("cognito-pledge-frame");
+  var cognitoFormUrl = cognitoFrame.src.split("?")[0];
+  var cognitoCss = "";
+  var pendingCognitoEntry = null;
   var lastTrigger = null;
 
   function formatMoney(value) {
@@ -105,8 +107,8 @@
   }
 
   function prefillCognito(entry, attempts) {
-    if (window.Cognito && typeof window.Cognito.prefill === "function") {
-      window.Cognito.prefill(entry);
+    if (typeof window.Cognito === "function") {
+      window.Cognito("#cognito-pledge-frame").prefill(entry);
       return;
     }
     if (attempts < 100) {
@@ -116,27 +118,37 @@
     }
   }
 
-  function ensureCognito() {
-    if (window.Cognito && typeof window.Cognito.prefill === "function") {
-      return Promise.resolve();
+  function applyCognitoStyles(css, attempts) {
+    if (typeof window.Cognito === "function") {
+      window.Cognito("#cognito-pledge-frame").setCss(css.replace(/\s+/g, " "));
+      return;
     }
-    if (cognitoLoadPromise) return cognitoLoadPromise;
-    cognitoLoadPromise = new Promise(function (resolve, reject) {
-      var script = document.createElement("script");
-      script.src = "https://www.cognitoforms.com/f/seamless.js?cachehash=4949cb7cd3ef4354b05ac16e4d465a70";
-      script.setAttribute("data-key", "dRAaFn88o0CEV3wipoVjTA");
-      script.setAttribute("data-form", "202");
-      script.setAttribute("data-context", "public");
-      script.onload = resolve;
-      script.onerror = function () {
-        cognitoLoadPromise = null;
-        cognitoHost.innerHTML = '<p class="cognito-load-error" role="alert">The secure form could not load. Please close this window and try again.</p>';
-        reject(new Error("Cognito Forms failed to load"));
-      };
-      cognitoHost.innerHTML = "";
-      cognitoHost.appendChild(script);
-    });
-    return cognitoLoadPromise;
+    if (attempts < 100) {
+      window.setTimeout(function () { applyCognitoStyles(css, attempts + 1); }, 50);
+    } else {
+      console.error("Cognito Forms styling API did not finish loading.");
+    }
+  }
+
+  fetch("cognito-form.css", { cache: "no-store" })
+    .then(function (response) {
+      if (!response.ok) throw new Error("Cognito stylesheet returned " + response.status);
+      return response.text();
+    })
+    .then(function (css) {
+      cognitoCss = css;
+      applyCognitoStyles(css, 0);
+    })
+    .catch(function (error) { console.error("Could not style Cognito form:", error); });
+
+  cognitoFrame.addEventListener("load", function () {
+    if (cognitoCss) applyCognitoStyles(cognitoCss, 0);
+    if (pendingCognitoEntry) prefillCognito(pendingCognitoEntry, 0);
+  });
+
+  function loadCognitoEntry(entry) {
+    pendingCognitoEntry = entry;
+    cognitoFrame.src = cognitoFormUrl + "?entry=" + encodeURIComponent(JSON.stringify(entry));
   }
 
   function openModal(trigger, amount, dedication, schedule) {
@@ -147,9 +159,7 @@
     document.body.classList.add("modal-open");
     closeButton.focus();
     var entry = cognitoEntry(amount, dedication, schedule || "now");
-    ensureCognito()
-      .then(function () { prefillCognito(entry, 0); })
-      .catch(function (error) { console.error(error); });
+    loadCognitoEntry(entry);
   }
 
   function closeModal() {
@@ -194,4 +204,8 @@
       first.focus();
     }
   });
+
+  if (new URLSearchParams(window.location.search).get("previewForm") === "1") {
+    document.getElementById("open-pledge").click();
+  }
 })();

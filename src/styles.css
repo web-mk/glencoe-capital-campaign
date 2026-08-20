@@ -237,6 +237,13 @@ footer { padding: clamp(44px, 5vw, 70px) 0; color: rgba(250,246,240,0.6); backgr
   border-top: 1px solid rgba(23,16,15,0.12);
   background: var(--cream);
 }
+.cognito-frame {
+  display: block;
+  width: 100%;
+  min-height: 1000px;
+  border: 0;
+  background: var(--cream);
+}
 .cognito-loading,
 .cognito-load-error {
   margin: 0;

@@ -1,0 +1,390 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Jost:wght@300;400;500&display=swap");
+
+#cognito .cog-cognito {
+  --font-family: "Jost", system-ui, sans-serif;
+  --header__font-family: "Cormorant Garamond", serif;
+  --label__font-family: "Jost", system-ui, sans-serif;
+  --button-primary__font-family: "Jost", system-ui, sans-serif;
+  --button-secondary__font-family: "Jost", system-ui, sans-serif;
+  --border-radius: 2px;
+  --input__border-radius: 2px;
+  --button__border-radius: 2px;
+  --toggle__border-radius: 2px;
+  --gutter: 14px;
+  --speed: 0.15s;
+  --highlight: #881934;
+  --highlight-reverse: #faf6f0;
+  --negative: #881934;
+  --negative-reverse: #faf6f0;
+  --input__background-color: #faf6f0;
+  --input__border-color: rgba(23, 16, 15, 0.28);
+  --input__border-width: 1px;
+  --input__color: #17100f;
+  --input__padding-h: 14px;
+  --input__padding-v: 14px;
+  --checkable__background-color: #faf6f0;
+  --form__background-color: transparent;
+  --form__margins: 0;
+  color: #17100f;
+  font-family: "Jost", system-ui, sans-serif;
+}
+
+#cognito .cog-form,
+#cognito .cog-form__container {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  color: #17100f;
+  background: transparent;
+  box-shadow: none;
+}
+
+#cognito .cog-header,
+#cognito .cog-content {
+  display: none;
+}
+
+#cognito .cog-section {
+  margin: 0 0 34px;
+}
+
+#cognito .cog-section__heading {
+  margin: 0 0 20px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid rgba(23, 16, 15, 0.12);
+  color: #881934;
+  font-family: "Jost", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.24em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+#cognito .cog-field {
+  margin-bottom: 16px;
+}
+
+#cognito .cog-label {
+  margin-bottom: 7px;
+  color: #5c534e;
+  font-family: "Jost", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.055em;
+  line-height: 1.45;
+}
+
+#cognito .cog-helptext {
+  margin-top: 7px;
+  color: #756a64;
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.55;
+}
+
+#cognito .el-input__inner,
+#cognito .el-textarea__inner {
+  min-height: 50px;
+  border: 1px solid rgba(23, 16, 15, 0.28);
+  border-radius: 2px;
+  color: #17100f;
+  background: #faf6f0;
+  box-shadow: none;
+  font-family: "Jost", system-ui, sans-serif;
+  font-size: 16px;
+}
+
+#cognito .el-textarea__inner {
+  min-height: 92px;
+  resize: vertical;
+}
+
+#cognito .el-input__inner::placeholder,
+#cognito .el-textarea__inner::placeholder {
+  color: #756a64;
+  opacity: 1;
+}
+
+#cognito .el-input__inner:focus,
+#cognito .el-textarea__inner:focus {
+  border-color: #881934;
+  outline: 2px solid rgba(136, 25, 52, 0.2);
+  outline-offset: 1px;
+}
+
+#cognito .el-radio__inner,
+#cognito .el-checkbox__inner {
+  border: 1px solid rgba(23, 16, 15, 0.32);
+  color: #881934;
+  background: #faf6f0;
+}
+
+#cognito .cog-choice .el-radio,
+#cognito .cog-choice .el-checkbox {
+  min-height: 46px;
+  padding: 12px 13px;
+  border: 1px solid rgba(23, 16, 15, 0.18);
+  border-radius: 2px;
+  color: #453c37;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+#cognito .cog-choice .el-radio:hover,
+#cognito .cog-choice .el-checkbox:hover {
+  border-color: #881934;
+  color: #881934;
+}
+
+#cognito .cog-button {
+  min-height: 54px;
+  padding: 17px 30px;
+  border: 1px solid #881934;
+  border-radius: 2px;
+  box-shadow: none;
+  font-family: "Jost", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+#cognito .cog-button--primary {
+  color: #faf6f0;
+  background: #881934;
+}
+
+#cognito .cog-button--primary:hover {
+  border-color: #17100f;
+  background: #17100f;
+}
+
+#cognito .cog-button--secondary {
+  color: #881934;
+  background: transparent;
+}
+
+#cognito .cog-page__navigation {
+  justify-content: stretch;
+  margin-top: 28px;
+}
+
+#cognito .cog-page__navigation .cog-button--primary {
+  width: 100%;
+}
+
+#cognito .cog-error-message {
+  margin-top: 7px;
+  padding: 9px 11px;
+  border-radius: 2px;
+  color: #faf6f0;
+  background: #881934;
+  font-size: 13px;
+}
+
+#cognito .cog-confirmation__message {
+  color: #453c37;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 25px;
+  line-height: 1.35;
+}
+
+/* Match the modal specification: commitment left, details and payment right. */
+#cognito .cog-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 48px;
+  align-items: start;
+}
+
+#cognito .cog-page > .cog-row {
+  width: auto;
+  margin: 0;
+}
+
+#cognito .cog-page > .cog-row:nth-child(1) {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
+#cognito .cog-page > .cog-row:nth-child(2) {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+#cognito .cog-page > .cog-row:nth-child(3) {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+#cognito .cog-page > .cog-row > .cog-section {
+  width: 100%;
+  padding: 0;
+}
+
+/* Preset amounts and giving schedule become the handoff's 2-by-2 tiles. */
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--2 .cog-choice,
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--4 .cog-choice,
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--5 .cog-choice {
+  width: 100% !important;
+  max-width: none !important;
+  flex: 1 1 100% !important;
+}
+
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--2 .cog-checkable,
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--4 .cog-checkable {
+  display: block !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: none !important;
+  flex: 1 1 100% !important;
+  inline-size: 100% !important;
+}
+
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--2 .el-radio-group,
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--4 .el-radio-group {
+  display: grid !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  inline-size: 100% !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--2 .el-radio,
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--4 .el-radio {
+  display: flex;
+  width: 100% !important;
+  max-width: none !important;
+  flex: 1 1 100% !important;
+  grid-column: auto !important;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 12px 10px;
+  text-align: center;
+}
+
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--2 .el-radio {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 21px;
+}
+
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--4 .el-radio {
+  font-family: "Jost", system-ui, sans-serif;
+  font-size: 14px;
+}
+
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--2 .el-radio__input,
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--4 .el-radio__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+}
+
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--2 .el-radio.is-checked,
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--4 .el-radio.is-checked {
+  border: 2px solid #881934;
+  color: #881934;
+  background: rgba(136, 25, 52, 0.05);
+}
+
+/* Cognito generated dedication as choices. Present them as a compact selector panel. */
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--5 .cog-checkable {
+  display: block !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: none !important;
+  inline-size: 100% !important;
+}
+
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--5 .el-radio-group {
+  display: grid !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  inline-size: 100% !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--5 .el-radio {
+  width: 100% !important;
+  max-width: none !important;
+  grid-column: auto !important;
+  min-height: 45px;
+  margin: 0;
+  padding: 10px 11px;
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+#cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--5 .el-radio.is-checked {
+  border-color: #881934;
+  color: #881934;
+  background: rgba(136, 25, 52, 0.05);
+}
+
+/* Pair email and phone while keeping name and recognition fields full width. */
+#cognito .cog-page > .cog-row:nth-child(2) .cog-section__inner {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 14px;
+}
+
+#cognito .cog-page > .cog-row:nth-child(2) .cog-section__heading,
+#cognito .cog-page > .cog-row:nth-child(2) .cog-section__inner > .cog-row:nth-of-type(1),
+#cognito .cog-page > .cog-row:nth-child(2) .cog-section__inner > .cog-row:nth-of-type(4),
+#cognito .cog-page > .cog-row:nth-child(2) .cog-section__inner > .cog-row:nth-of-type(5) {
+  grid-column: 1 / -1;
+}
+
+#cognito .cog-page > .cog-row:nth-child(2) .cog-section__inner > .cog-row {
+  margin-inline: 0;
+}
+
+#cognito .cog-page > .cog-row:nth-child(2) .cog-section__inner > .cog-row > .cog-field {
+  width: 100%;
+  padding-inline: 0;
+}
+
+#cognito .cog-page > .cog-row:nth-child(3) .cog-section {
+  margin-bottom: 0;
+}
+
+#cognito .cog-row:has(.cog-page__navigation),
+#cognito .cog-field:has(.cog-page__navigation) {
+  width: 100%;
+  max-width: none;
+}
+
+@media (max-width: 760px) {
+  #cognito .cog-page {
+    display: block;
+  }
+
+  #cognito .cog-section__heading {
+    font-size: 11px;
+  }
+
+  #cognito .cog-page > .cog-row:nth-child(2) .cog-section__inner {
+    display: block;
+  }
+
+  #cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--5 .el-radio-group {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #cognito .cog-cognito {
+    --speed: 0s;
+  }
+}

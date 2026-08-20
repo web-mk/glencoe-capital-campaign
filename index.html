@@ -100,10 +100,18 @@
       <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="pledge-modal-title">
         <div class="modal-header"><div><h2 id="pledge-modal-title">Make Your Gift</h2><p>Chabad of Glencoe Capital Campaign, 2026 to 2027</p></div><button class="modal-close" type="button" aria-label="Close pledge form"><span aria-hidden="true">×</span></button></div>
         <div id="cognito-form" aria-label="Chabad of Glencoe capital campaign pledge form">
-          <p class="cognito-loading" role="status">Loading secure form...</p>
+          <iframe
+            id="cognito-pledge-frame"
+            class="cognito-frame"
+            src="https://www.cognitoforms.com/f/dRAaFn88o0CEV3wipoVjTA/202"
+            title="Chabad of Glencoe capital campaign pledge form"
+            allow="payment"
+            height="1100"
+          ></iframe>
         </div>
       </div>
     </div>
+    <script src="https://www.cognitoforms.com/f/iframe.js" defer></script>
     <script src="site-config.js" defer></script>
     <script src="app.js" defer></script>
   </body>
