@@ -207,12 +207,6 @@ h1, h2, h3 { text-wrap: balance; }
 .committee-section h2 { margin: 0 auto 18px; font-family: "Cormorant Garamond", serif; font-size: clamp(28px, 3.4vw, 46px); font-weight: 300; line-height: 1.1; }
 .committee-section p:last-child { max-width: 36em; margin: auto; color: var(--muted); font-size: 17px; font-weight: 300; line-height: 1.65; }
 
-.closing-section { color: var(--cream); background: var(--maroon); }
-.closing-inner { max-width: 1000px; margin: auto; padding: clamp(70px, 10vw, 150px) clamp(20px, 4vw, 64px); text-align: center; }
-.closing-inner .eyebrow { margin-bottom: 28px; color: rgba(250,246,240,0.62); letter-spacing: 0.4em; }
-.closing-inner h2 { max-width: 32em; margin: 0 auto 34px; font-family: "Cormorant Garamond", serif; font-size: clamp(32px, 4.4vw, 60px); font-weight: 300; letter-spacing: -0.015em; line-height: 1.15; }
-.button-cream { border-color: var(--cream); color: var(--ink); background: var(--cream); }
-.button-cream:hover { border-color: var(--ink); color: var(--cream); background: var(--ink); }
 
 footer { padding: clamp(44px, 5vw, 70px) 0; color: rgba(250,246,240,0.6); background: var(--ink); }
 .footer-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 30px 60px; }
