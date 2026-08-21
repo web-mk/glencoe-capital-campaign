@@ -185,10 +185,9 @@ h1, h2, h3 { text-wrap: balance; }
 .dedication-group button:hover { color: var(--gold-light); }
 .dedication-group button span { font-weight: 300; }
 .dedication-group button strong { font-family: "Cormorant Garamond", serif; font-size: 19px; font-weight: 400; white-space: nowrap; }
-.dedication-premier { display: grid; cursor: pointer; text-decoration: none; transition: border-color 0.15s, background 0.15s; gap: 5px; margin: 18px 0 6px; padding: 18px 20px; border: 1px solid rgba(232,201,130,0.45); border-radius: 2px; background: rgba(232,201,130,0.07); }
+.dedication-premier { display: grid; gap: 5px; margin: 18px 0 6px; padding: 18px 20px; border: 1px solid rgba(232,201,130,0.45); border-radius: 2px; background: rgba(232,201,130,0.07); }
 .dedication-premier span { font-family: "Cormorant Garamond", serif; font-size: 24px; font-weight: 400; line-height: 1.15; }
 .dedication-premier strong { color: var(--gold); font-size: 12px; font-weight: 400; letter-spacing: 0.16em; text-transform: uppercase; }
-.dedication-premier:hover { border-color: rgba(232,201,130,0.8); background: rgba(232,201,130,0.12); }
 .dedication-premier small { color: rgba(250,246,240,0.5); font-size: 13px; font-weight: 300; line-height: 1.5; }
 .recognition { margin-top: clamp(46px, 5vw, 72px); padding-top: clamp(36px, 4vw, 52px); border-top: 1px solid rgba(250,246,240,0.16); }
 .recognition-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 12px 30px; }

@@ -82,11 +82,14 @@ Collapsing to four is a genuine simplification.
 
 ## OPEN QUESTIONS — need the client's answer
 
-1. **"Reserved" on Building Dedication.** Now the most prominent item in the
-   giving section. If it means "already committed," we are announcing the best
-   opportunity is gone right where donors start looking — and by his own logic he
-   would remove it (that is exactly why he pulled the entrance mezuzah). If it
-   means "amount by conversation," it needs different words. ASK HIM WHICH.
+1. ~~**"Reserved" on Building Dedication.**~~ RESOLVED Aug 21, 2026. The label
+   came from the original build, not from the client's email — he never wrote it.
+   Confirmed with Mendel that the building naming genuinely IS reserved, so the
+   label stays. It keeps the premier card treatment the client asked for in #13,
+   which reads as campaign momentum rather than a missing opportunity. Note this
+   differs from how the entrance mezuzah was handled (removed once committed);
+   if the client would rather hide claimed dedications entirely, this one should
+   go too.
 2. **Accessible entry.** He said remove it, "not relevant." NOT removed —
    currently reads "Accessible entry, ramp, outdoor porch and patio." Quietly
    deleting accessibility from a community building is not a silent call. If the
