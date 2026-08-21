@@ -229,110 +229,121 @@ The modal is the only intended scroll surface around the form. Avoid adding anot
 
 ## Payment launch blocker
 
-Verified against the live form schema via the Cognito MCP on Aug 20, 2026
-(form 202, schema Version 5, `Metadata.Source: "mcp"`).
+Status as of Aug 21, 2026, verified two ways: the form schema read through the
+Cognito MCP, and the live public form driven in a real browser.
 
-### Corrected diagnosis
+### What is already done
 
-An earlier note in this file said to "enable collection on Total pledge amount"
-without specifying how, and a working assumption during the Aug 20 session was
-that `TotalPledgeAmount` was a plain Number field requiring a new Price field to
-be added. Both readings were imprecise. The schema shows:
+Payment was switched on between Aug 20 and Aug 21 (schema Version 5 to 7):
 
 ```json
-"DataType": "Currency",
-"FieldType": "Currency",
-"FieldName": "TotalPledgeAmount",
-"CollectPayment": false
-```
-
-It is already a Currency field, and Currency fields carry their own
-`CollectPayment` property. **No Price field needs to be added.** The blocker is
-that one property being `false`.
-
-Note that Cognito's public documentation describes the Price field as the
-payment-collecting field type and does not clearly document `CollectPayment` on
-Currency fields. The live schema is the authority here, not the docs.
-
-### Stripe is already connected
-
-```json
-"PaymentAccount": {
-  "Id": "da929282-c6bc-4478-9693-1a582ad7eec6",
-  "Name": "Chabad of Glencoe",
-  "ProcessorName": "Stripe"
-},
-"PaymentEnabled": false,
+"TotalPledgeAmount": { "DataType": "Currency", "CollectPayment": true },
+"PaymentEnabled": true,
+"PaymentAccount": { "Name": "Chabad of Glencoe", "ProcessorName": "Stripe" },
 "PaymentMode": "Live"
 ```
 
-The gateway is wired up correctly. Nothing is switched on to use it.
+Stripe is connected and the order builds correctly. Entering $1,800 produces a
+real order with a Stripe card element. **The card fields are not missing.**
 
-### RequirePayment will break pledges as currently set
+An earlier working assumption in this project — that `TotalPledgeAmount` was a
+Number field and a separate Price field had to be added — was wrong. Currency
+fields carry their own `CollectPayment` property. Note that Cognito's public
+documentation presents the Price field as the payment-collecting field type and
+does not clearly document `CollectPayment` on Currency fields. **The live schema
+is authoritative here, not the docs.**
+
+### Four problems remain, all live right now
+
+Observed on the public form with $1,800 entered:
+
+```
+Card Authorization  *(required)
+[ ] I agree to save my card for future transactions.
+
+Total pledge amount   $1,800.00
+Subtotal:             $1,800.00
+Processing Fees:         $54.07
+Amount Due:           $1,854.07
+```
+
+**1. The section renders as "Card Authorization", not a payment.** Caused by:
 
 ```json
-"RequirePayment": "true"
-```
-
-This is hardcoded true. Ticking Collect Payment without changing it means every
-submission demands a card, which breaks the Check and Other pledge paths the
-client asked for.
-
-These payment settings accept Cognito `=` formulas. The form already contains a
-working example, which is the syntax to copy:
-
-```
 "SaveCustomerCard": "=(!YourCommitment.HowWouldYouLikeToGive.Contains(\"full\"))"
 ```
 
-### No PaymentMethod field exists
+On a fresh load nothing is selected, so `HowWouldYouLikeToGive` is null,
+`null.Contains("full")` is false, the `!` flips it true, and Cognito switches the
+whole section into save-card-for-later mode. This null case is also the most
+likely source of the browser console error:
 
-The client's request for a Credit Card / Check / Other selector requires creating
-a new Choice field. It is not present in the schema.
+```
+Error encountered while running rule
+"Forms.FormEntry.SholomWolberg.ChabadOfGlencoeCapitalCampaign20262027.rebuildOrderRule"
+```
 
-### The MCP cannot make these changes
+**2. The save-card consent checkbox is required.** `.cog-payment__save-card` has
+`is-required`. No donor can submit without agreeing to let Chabad of Glencoe
+charge their card for future payments — including someone giving once today. This
+contradicts the form's own copy, which says installments are "recorded as a
+pledge for campaign-team follow-up."
 
-Available tools are `get_forms`, `get_form_schema`, `get_entry`,
-`get_entries_in_view`, `get_entry_views`, `create_entry`, `update_entry`,
-`delete_entry`, `get_file`, `get_document`, `set_form_availability`,
-`generate_form`, and `save_generated_form`.
+**3. Processing fees are passed to the donor.** `IncludeProcessingFees: true`
+turns an $1,800 gift into $1,854.07 due. This was inherited from the generated
+form, not chosen. Decide deliberately: absorb the roughly 3 percent, or present
+it as an opt-in checkbox. Silently surcharging donations will generate
+complaints.
 
-There is no update-form tool. `save_generated_form` CREATES a form from a
-`generate_form` session; running it would produce a new form with a new ID and
-break the embed URL hardcoded in `index.html` and `app.js`. Do not use it to try
-to edit form 202. The MCP is read-only for schema purposes, which is still
-useful — one `get_form_schema` call is faster and more accurate than clicking
-through the builder.
+**4. `RequirePayment` is hardcoded `"true"`.** Every submission demands a card,
+so the Check and Other pledge paths the client asked for cannot work.
 
-### Steps to complete in the Cognito builder
+### Fixes, in order
 
-1. Select `Total pledge amount` and enable **Collect payment**.
-2. Add a Choice field `PaymentMethod` with options Credit Card, Check, Other.
-3. Set **Require payment** to a formula so a card is only demanded for card
-   gifts paid in full, approximately:
-   `=(YourCommitment.HowWouldYouLikeToGive = "Give in full today") and (YourCommitment.PaymentMethod = "Credit Card")`
-4. Rename the `Dedication` choice `Bimah, Entrance Mezuzah - $36,000` to
-   `Bimah - $36,000` to match the page. Until this is done the Bimah button will
-   not preselect. See the Cognito Forms integration section above.
-5. Delete the three generated instructional Content blocks in the Payment
-   section ("Secure payment note", "Complete My Commitment", "Confirmation
-   message") once the real workflow copy is configured.
-6. Confirm whether installment choices are follow-up pledges or actual recurring
-   payments. `SaveCustomerCard` currently saves the card for non-"full"
-   selections, which implies later charging.
+1. **Set `SaveCustomerCard` to `false`.** Not a smarter formula — off. The page
+   copy already promises installments are follow-up pledges, so nothing should be
+   saving cards. This one change removes the "Card Authorization" heading, the
+   required consent checkbox, and the likely console error together.
+2. **Make `RequirePayment` conditional.** Use explicit equality rather than
+   `.Contains()`, so an unselected field cannot produce the same null bug:
+   `=(YourCommitment.HowWouldYouLikeToGive = "Give in full today")`
+   Add `and YourCommitment.PaymentMethod = "Credit Card"` once that field exists.
+3. **Add a `PaymentMethod` Choice field** (Credit Card / Check / Other). It does
+   not exist yet; the client asked for it.
+4. **Decide on processing fees** before any real gift is taken.
+5. **Rename the `Dedication` choice** `Bimah, Entrance Mezuzah - $36,000` to
+   `Bimah - $36,000`. The entrance mezuzah was privately committed and is already
+   removed from the page. Until Cognito matches, that button will not preselect.
+6. **Delete the three instructional Content blocks** in the Payment section
+   ("Secure payment note", "Complete My Commitment", "Confirmation message") once
+   real workflow copy is configured.
 
-### Untested assumption in step 3
+### Why this cannot be automated from here
 
-It is confirmed that `RequirePayment` accepts a formula. It is NOT confirmed
-whether a Currency field with Collect Payment enabled will allow submission when
-Require Payment evaluates false, or whether it still insists on a card because
-the field carries a non-zero amount. If it insists, condition the charged amount
-rather than the requirement.
+The Cognito MCP exposes `get_forms`, `get_form_schema`, entry CRUD, `get_file`,
+`get_document`, `set_form_availability`, `generate_form`, and
+`save_generated_form`. **There is no update-form tool.** `save_generated_form`
+CREATES a form from a `generate_form` session; running it would produce a new
+form with a new ID and break the embed URL hardcoded in `index.html` and
+`app.js`. Do not point it at form 202.
 
-Test before trusting: a Check pledge, an Other pledge, an installment pledge, one
-small live card gift, confirmation email delivery, and the internal entry data.
+Reading the schema through the MCP is still the fastest way to check state, and
+the live form can be driven in Playwright to verify behaviour. Only the edits
+themselves require the builder.
 
-Do not represent card processing as live until those checks pass.
+### Required test pass before launch
+
+Nothing here is verified until all of these pass:
+
+- A Check pledge submits without demanding a card
+- An Other pledge submits without demanding a card
+- An installment pledge submits and records correctly
+- One small live card gift completes and settles in Stripe
+- The confirmation email arrives, with correct amount and dedication
+- The internal entry shows the right status, amount, and dedication
+- No console error on form load
+
+Do not represent card processing as live until those pass.
 
 ## Verification completed
 
