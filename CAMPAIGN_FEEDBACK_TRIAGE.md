@@ -52,7 +52,7 @@ Three concrete tells in his proposed copy:
 
 ---
 
-## IMPLEMENTED (Aug 20, 2026)
+## IMPLEMENTED (Aug 20–21, 2026)
 
 Files touched: `index.html`, `src/styles.css`. Verified in a real browser:
 correct section order, no dead CSS, no horizontal overflow at 390px, four tiers
@@ -232,6 +232,137 @@ not clearly document CollectPayment on Currency fields — the live schema is th
 authority):
 https://www.cognitoforms.com/support/3/collecting-payment
 https://www.cognitoforms.com/support/38/building-forms/form-field-reference/price-field
+
+---
+
+## ALSO BUILT SINCE THE FEEDBACK (Aug 20–21, 2026)
+
+Not from the client's list, but part of the same push and worth telling him:
+
+**The giving form now actually takes money.** It previously could not — Stripe
+was connected but nothing was switched on to use it, while the page said "pledge
+by credit card". Now:
+
+- Credit card gifts are charged through Stripe.
+- Check, Donor-Advised Fund and appreciated-stock commitments submit as pledges
+  **without** being forced into a card payment — his #15, solved.
+- Multi-year pledges submit as pledges, no card.
+- Processing fees are **off**: an $1,800 gift bills $1,800, not $1,854.
+- Donors are no longer required to consent to storing their card, which the form
+  had been demanding of everyone.
+- Dedication buttons on the page carry the donor straight into the form with the
+  dedication and amount already filled in.
+
+**Campaign totals are now live.** Raised and goal come from a Google Sheet the
+office can edit — no developer, no deploy. The budget breakdown reconciles to
+the goal automatically.
+
+**Fixes worth noting:** the form was unusable on smaller screens (the submit
+button was unreachable), and the layout and typography inside it now match the
+site rather than Cognito's defaults.
+
+---
+
+## DRAFT REPLY TO THE CLIENT
+
+Adjust tone as needed; the structure follows the strategy above — agree loudly,
+spend capital on three things, close with what you need from him.
+
+---
+
+Subject: Campaign site — first round of updates is live
+
+Rabbi,
+
+Thank you for such a careful read. Two of your catches were genuinely important
+and I've made both:
+
+You were right that "For the first time, Jewish Glencoe will have a permanent
+address" isn't accurate with two established temples in town. It now reads "For
+the first time, Chabad of Glencoe will have a permanent home of its own, in the
+heart of the community we serve."
+
+You were also right that the giving structure was confusing — the site had two
+competing systems, four dedication groups *and* a separate ten-level recognition
+wall. It's now one consistent set of four everywhere: Lead Gifts, Visionary
+Gifts, Founders, Builders.
+
+Also done:
+
+- The Building Dedication is now first among the Lead Gifts and styled as the
+  premier opportunity.
+- The Front Door Mezuzah is removed.
+- "What a building makes possible" now comes before the 589 Vernon details, under
+  "The Future We're Building". "Square footage is not the point" is gone, and
+  your three rewritten themes are in — I trimmed a few repeated phrases so they
+  don't echo each other, worth a read.
+- "100% locally funded" has moved up beside the campaign progress, presented as
+  community ownership rather than a footnote.
+- The Hebrew School wing no longer specifies two classrooms.
+- The campaign budget and the $2,295,840 goal are untouched.
+
+Two things beyond your list that I think matter:
+
+**The donation form now works.** It previously couldn't actually take a credit
+card. Donors can now give by card, or commit by check, donor-advised fund or
+appreciated stock without being pushed into a card payment — which is what you
+asked for. I also turned off the processing-fee surcharge, so a $1,800 gift is
+billed $1,800.
+
+**Campaign progress updates itself.** The raised figure and goal now come from a
+spreadsheet your office controls, so you can update the thermometer any time
+without going through me.
+
+A few questions before I go further:
+
+1. **Multi-year pledges** — should these be recorded as pledges your team follows
+   up on, or do you want cards charged automatically each year? The site
+   currently promises the former. Worth deciding deliberately, since it changes
+   what donors are agreeing to.
+2. **Accessible entry** — you asked to remove it. I've left it for now: if the
+   renovation does include a ramp, I'd keep it, since older members and anyone
+   with mobility issues are donors too. Your call.
+3. **The $3,600 giving level** disappeared when we consolidated to four
+   categories. Fine to lose, or should it stay?
+4. **Building Dedication** — is there a figure for it, or does it stay as
+   "Reserved"?
+
+On three of your suggestions I'd push back, and I'd rather say so than quietly
+not do them:
+
+**The hero.** I'd keep "a private living room" and "589 Vernon Avenue" in the
+opening paragraph. The headline you're keeping — "at last a home of its own" —
+only lands if the reader knows there isn't one yet. Your new opening is warmer,
+so I'd like to merge them rather than swap wholesale.
+
+**The sticky donor sidebar.** I'd advise against it. The design is built on
+full-width photography, and a rail that follows the page down crops every one of
+those images. With a handful of confirmed names it will also read as empty, which
+signals a stalled campaign. I'd rather give the donors a proper section with room
+to look substantial — and if you want something persistent, a slim progress bar
+does that without touching the layout.
+
+**Total number of sections.** Between Why Now, renderings, momentum, the video,
+the founding generation and a donor section, the page roughly doubles in length.
+That pushes the donate button a long way down. I'd like to build them one at a
+time and see how the page feels rather than adding all six at once.
+
+To keep moving, I need from you:
+
+- **Photographs — 25 to 30 if possible.** This is the real blocker on your
+  photography notes. The site currently has five, which is why the Hebrew School
+  and community shots repeat. I can't show the full range of ages you want
+  without more to choose from.
+- Confirmed donor names and levels, when you're ready to publish them.
+- Renderings, as they come.
+- The community video after the parlor meeting — the section is already built and
+  hidden, so it's one switch when the file exists.
+- Campaign committee names.
+
+Best,
+Mendel
+
+---
 
 ## Suggested reply strategy
 
