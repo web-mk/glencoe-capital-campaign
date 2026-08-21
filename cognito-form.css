@@ -333,6 +333,75 @@
   background: rgba(136, 25, 52, 0.05);
 }
 
+/* Your Commitment: Dedication and Other amounts are half-width in Cognito
+   (cog-col--12), but the section already occupies the modal's left column, so
+   halving again crushed them to ~212px and wrapped every label. Force them
+   full width within that column. */
+#cognito .cog-page > .cog-row:nth-child(1) .cog-col--12 {
+  width: 100% !important;
+  max-width: none !important;
+  flex: 1 1 100% !important;
+}
+
+/* Dedication renders as selectable cards; lay them out two-up so the names and
+   amounts fit on one line each. */
+#cognito .cog-choice--singleselectcards .el-radio-group {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+#cognito .cog-choice--singleselectcards .cog-checkable--card {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 12px 14px !important;
+  text-align: left !important;
+}
+
+/* Card labels sit below the input by default, which stacks name over price and
+   doubles the height. Keep them inline and left aligned. */
+#cognito .cog-choice--singleselectcards .cog-checkable--label-on-bottom {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 2px !important;
+}
+
+/* The selected-state check badge is drawn just outside the card's top-left
+   corner, so on the leftmost column it was being clipped by the field box.
+   Let it paint outside, and reserve a little room on the left for it. */
+#cognito .cog-choice--singleselectcards,
+#cognito .cog-choice--singleselectcards .cog-checkable,
+#cognito .cog-choice--singleselectcards .el-radio-group,
+#cognito .cog-choice--singleselectcards .cog-checkable--card {
+  overflow: visible !important;
+}
+
+#cognito .cog-choice--singleselectcards .el-radio-group {
+  padding-left: 10px !important;
+  padding-top: 8px !important;
+}
+
+/* Payment area: Cognito's own labels render at 13px while the Stripe card
+   element inside its cross-origin frame renders at its own default (~16px),
+   so the labels read as undersized next to the card inputs. Nudge the payment
+   section's labels and readonly values up to close that gap. Stripe's internal
+   text cannot be reached from injected CSS. */
+#cognito .cog-payment .cog-label,
+#cognito .cog-payment__save-card,
+#cognito .cog-field:has(.cog-payment) .cog-label {
+  font-size: 15px !important;
+}
+
+#cognito .cog-payment,
+#cognito .cog-payment__field,
+#cognito .cog-payment__frame {
+  font-size: 15px !important;
+}
+
 /* Pair email and phone while keeping name and recognition fields full width. */
 #cognito .cog-page > .cog-row:nth-child(2) .cog-section__inner {
   display: grid;
@@ -380,7 +449,8 @@
     display: block;
   }
 
-  #cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--5 .el-radio-group {
+  #cognito .cog-page > .cog-row:nth-child(1) .cog-field.cog-field--5 .el-radio-group,
+  #cognito .cog-choice--singleselectcards .el-radio-group {
     grid-template-columns: 1fr !important;
   }
 }

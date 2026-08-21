@@ -185,9 +185,10 @@ h1, h2, h3 { text-wrap: balance; }
 .dedication-group button:hover { color: var(--gold-light); }
 .dedication-group button span { font-weight: 300; }
 .dedication-group button strong { font-family: "Cormorant Garamond", serif; font-size: 19px; font-weight: 400; white-space: nowrap; }
-.dedication-premier { display: grid; gap: 5px; margin: 18px 0 6px; padding: 18px 20px; border: 1px solid rgba(232,201,130,0.45); border-radius: 2px; background: rgba(232,201,130,0.07); }
+.dedication-premier { display: grid; cursor: pointer; text-decoration: none; transition: border-color 0.15s, background 0.15s; gap: 5px; margin: 18px 0 6px; padding: 18px 20px; border: 1px solid rgba(232,201,130,0.45); border-radius: 2px; background: rgba(232,201,130,0.07); }
 .dedication-premier span { font-family: "Cormorant Garamond", serif; font-size: 24px; font-weight: 400; line-height: 1.15; }
 .dedication-premier strong { color: var(--gold); font-size: 12px; font-weight: 400; letter-spacing: 0.16em; text-transform: uppercase; }
+.dedication-premier:hover { border-color: rgba(232,201,130,0.8); background: rgba(232,201,130,0.12); }
 .dedication-premier small { color: rgba(250,246,240,0.5); font-size: 13px; font-weight: 300; line-height: 1.5; }
 .recognition { margin-top: clamp(46px, 5vw, 72px); padding-top: clamp(36px, 4vw, 52px); border-top: 1px solid rgba(250,246,240,0.16); }
 .recognition-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 12px 30px; }
@@ -222,27 +223,35 @@ footer { padding: clamp(44px, 5vw, 70px) 0; color: rgba(250,246,240,0.6); backgr
 .footer-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 14px 30px; margin-top: clamp(34px, 4vw, 52px); padding-top: 22px; border-top: 1px solid rgba(250,246,240,0.14); color: rgba(250,246,240,0.45); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
 
 .modal-backdrop { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: clamp(12px, 3vw, 48px); overflow-y: auto; background: rgba(23,16,15,0.72); backdrop-filter: blur(4px); }
-.modal-panel { display: flex; width: 100%; max-width: 1000px; max-height: calc(100dvh - 2 * clamp(12px, 3vw, 48px)); flex-direction: column; overflow: hidden; border-radius: 3px; background: var(--cream); box-shadow: 0 40px 90px rgba(0,0,0,0.45); }
+.modal-panel { display: flex; width: 100%; max-width: 1000px; height: calc(100dvh - 2 * clamp(12px, 3vw, 48px)); flex-direction: column; overflow: hidden; border-radius: 3px; background: var(--cream); box-shadow: 0 40px 90px rgba(0,0,0,0.45); }
 .modal-header { position: sticky; top: 0; z-index: 2; display: flex; flex: none; align-items: flex-start; justify-content: space-between; gap: 24px; padding: clamp(24px, 3vw, 38px) clamp(22px, 3vw, 44px) 0; background: var(--cream); }
 .modal-header h2 { margin: 0; font-family: "Cormorant Garamond", serif; font-size: clamp(28px, 3vw, 38px); font-weight: 400; line-height: 1.15; }
 .modal-header p { margin: 6px 0 0; color: var(--faint); font-size: 14px; font-weight: 300; }
 .modal-close { display: grid; flex: none; width: 42px; height: 42px; place-items: center; border: 1px solid rgba(23,16,15,0.18); border-radius: 99px; color: var(--muted); background: transparent; font-size: 25px; line-height: 1; cursor: pointer; transition: color 0.15s, background 0.15s, border-color 0.15s; }
 .modal-close:hover { border-color: var(--ink); color: var(--cream); background: var(--ink); }
 #cognito-form {
+  display: flex;
   width: 100%;
+  min-height: 0;
   flex: 1 1 auto;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  overflow: hidden;
   margin-top: 24px;
   padding: clamp(24px, 3vw, 38px) clamp(22px, 3vw, 44px) clamp(28px, 4vw, 52px);
   border-top: 1px solid rgba(23,16,15,0.12);
   background: var(--cream);
 }
+/* Cognito's iframe.js sets a height attribute from ITS measurement of the
+   content, but our injected stylesheet reflows that content taller afterwards
+   and Cognito never re-measures. Combined with scrolling="no", the difference
+   (roughly 585px, including the submit button) became unreachable. Pin the
+   iframe to the panel instead and let its own document scroll. The !important
+   is required to beat the height attribute Cognito rewrites on every resize. */
 .cognito-frame {
   display: block;
   width: 100%;
-  min-height: 1000px;
+  min-height: 0;
+  height: 100% !important;
+  flex: 1 1 auto;
   border: 0;
   background: var(--cream);
 }

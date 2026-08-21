@@ -127,21 +127,30 @@
   }
   document.getElementById("committee").hidden = !config.showCommittee;
 
-  function cognitoEntry(amount, dedication, schedule) {
+  // Cognito form 202 (v27) puts the price ON the choice options:
+  //   Dedication   -> "Sanctuary" carries Price 360000
+  //   OtherAmounts -> "$1,800" carries Price 1800, "Other" carries Price 0
+  //   OtherAmount  -> currency field, shown only when OtherAmounts = "Other"
+  //   Total (Price) = Dedication_Price + OtherAmounts_Price + OtherAmount
+  //
+  // Dedication labels are bare names now, NOT "Sanctuary - $360,000", so the
+  // amount must not be appended or the option will fail to match and nothing
+  // preselects. And because a dedication already carries its price, setting an
+  // amount alongside it would double the total.
+  function cognitoEntry(amount, dedication) {
     var numericAmount = amount ? Number(amount) : 0;
-    var presets = [1800, 5400, 18000, 36000];
-    // NOTE: "HowWouldYouLikeToGive" was removed from Cognito form 202 on Aug 21,
-    // 2026 and replaced by "GiftType" in the Payment section. GiftType is
-    // deliberately NOT prefilled — the donor chooses one-time vs. pledge
-    // themselves, and guessing it here would preselect the wrong path.
+    var presetLabels = { 1800: "$1,800", 5400: "$5,400", 18000: "$18,000", 36000: "$36,000" };
     var commitment = {
-      Dedication: dedication
-        ? dedication + " - " + formatMoney(numericAmount)
-        : "No dedication, general campaign gift",
+      Dedication: dedication || "No dedication, general campaign gift",
     };
-    if (numericAmount) commitment.TotalPledgeAmount = numericAmount;
-    // Renamed from "PresetAmount" to "OtherAmounts" in Cognito form 202 on Aug 21, 2026.
-    if (presets.indexOf(numericAmount) >= 0) commitment.OtherAmounts = formatMoney(numericAmount);
+    if (!dedication && numericAmount) {
+      if (presetLabels[numericAmount]) {
+        commitment.OtherAmounts = presetLabels[numericAmount];
+      } else {
+        commitment.OtherAmounts = "Other";
+        commitment.OtherAmount = numericAmount;
+      }
+    }
     return { YourCommitment: commitment };
   }
 
@@ -181,6 +190,11 @@
     .catch(function (error) { console.error("Could not style Cognito form:", error); });
 
   cognitoFrame.addEventListener("load", function () {
+    // Cognito's iframe.js re-applies scrolling="no" on load. Our injected CSS
+    // makes the form taller than Cognito's own height measurement, so the
+    // iframe must be able to scroll its own document or the tail of the form
+    // (including the submit button) is unreachable.
+    cognitoFrame.setAttribute("scrolling", "yes");
     if (cognitoCss) applyCognitoStyles(cognitoCss, 0);
     if (pendingCognitoEntry) prefillCognito(pendingCognitoEntry, 0);
   });
@@ -190,15 +204,13 @@
     cognitoFrame.src = cognitoFormUrl + "?entry=" + encodeURIComponent(JSON.stringify(entry));
   }
 
-  function openModal(trigger, amount, dedication, schedule) {
+  function openModal(trigger, amount, dedication) {
     lastTrigger = trigger;
-    document.getElementById("pledge-modal-title").textContent =
-      schedule && schedule !== "now" ? "Campaign Pledge" : "Make Your Gift";
+    document.getElementById("pledge-modal-title").textContent = "Make Your Gift";
     modal.hidden = false;
     document.body.classList.add("modal-open");
     closeButton.focus();
-    var entry = cognitoEntry(amount, dedication, schedule || "now");
-    loadCognitoEntry(entry);
+    loadCognitoEntry(cognitoEntry(amount, dedication));
   }
 
   function closeModal() {
@@ -210,11 +222,11 @@
 
   document.querySelectorAll("[data-amount]").forEach(function (button) {
     button.addEventListener("click", function () {
-      openModal(button, button.dataset.amount, button.dataset.dedication || "", "now");
+      openModal(button, button.dataset.amount, button.dataset.dedication || "");
     });
   });
   document.getElementById("open-pledge").addEventListener("click", function (event) {
-    openModal(event.currentTarget, "", "", "now");
+    openModal(event.currentTarget, "", "");
   });
   closeButton.addEventListener("click", closeModal);
   modal.addEventListener("mousedown", function (event) {
