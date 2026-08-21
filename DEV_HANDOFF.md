@@ -298,13 +298,36 @@ complaints.
 **4. `RequirePayment` is hardcoded `"true"`.** Every submission demands a card,
 so the Check and Other pledge paths the client asked for cannot work.
 
+### Where these settings actually live in the builder
+
+Payment settings are NOT part of the Workflow builder. Workflow covers statuses,
+actions, and emails only. Payment is its own area: click **"Payment" in the top
+toolbar**, or click the Payment area at the bottom of the form preview.
+
+The UI labels do not match the schema property names, which makes the settings
+hard to find from a schema dump:
+
+| Schema property | Builder label | Options |
+|---|---|---|
+| `RequirePayment` | **Process Payment** | Always / When (conditional) / Never (invoice only) |
+| `SaveCustomerCard` | **Keep Card on File** | Always / When (conditional) / Never |
+| `IncludeProcessingFees` | **Processing Fees** | pass transaction fees to the donor, with optional custom label |
+
+Both Process Payment and Keep Card on File support conditional logic through the
+Conditional Logic Builder. Prefer building conditions with the builder's
+dropdowns rather than hand-writing a formula — that is how the null bug in the
+existing `SaveCustomerCard` expression got in.
+
+Keep Card on File is a Team/Enterprise plan feature.
+
 ### Fixes, in order
 
-1. **Set `SaveCustomerCard` to `false`.** Not a smarter formula — off. The page
+1. **Set Keep Card on File (`SaveCustomerCard`) to `Never`.** Not a smarter formula — off. The page
    copy already promises installments are follow-up pledges, so nothing should be
    saving cards. This one change removes the "Card Authorization" heading, the
    required consent checkbox, and the likely console error together.
-2. **Make `RequirePayment` conditional.** Use explicit equality rather than
+2. **Set Process Payment (`RequirePayment`) to "When".** Build the condition with the
+   Conditional Logic Builder's dropdowns. Use explicit equality rather than
    `.Contains()`, so an unselected field cannot produce the same null bug:
    `=(YourCommitment.HowWouldYouLikeToGive = "Give in full today")`
    Add `and YourCommitment.PaymentMethod = "Credit Card"` once that field exists.
