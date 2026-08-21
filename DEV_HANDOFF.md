@@ -418,6 +418,58 @@ Then Process Payment becomes:
 Also stale: the `Total pledge amount` help text still reads "Payment is collected
 only when you select 'Give in full today'", referencing the deleted field.
 
+### Modal scrolling
+
+The form grew past the viewport once Gift Type, Payment Method, the Price field
+and the Stripe card element were added (roughly 1,470px of modal in a 741px
+viewport during testing). It became impossible to scroll to the submit button.
+
+The iframe auto-resize is NOT the problem and works correctly — measured growing
+1102px to 1107px to 1181px as fields appeared. The problem was that the only
+scroll container was `.modal-backdrop`, sitting *behind* an iframe that filled
+the panel. Wheel events land on the iframe's document, which has no overflow of
+its own, so there was nothing to scroll against.
+
+Fix: `.modal-panel` is now a flex column capped at
+`calc(100dvh - 2 * clamp(12px, 3vw, 48px))`, `.modal-header` is sticky and
+`flex: none`, and `#cognito-form` is the scroll container
+(`flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain`). Scrolling
+over the iframe chains to that container once the iframe has no further scroll.
+
+This is NOT the nested-scroll pattern warned against elsewhere in this file. That
+warning is about adding a fixed-height scroll area *inside* the Cognito form (the
+dedication list). A scroll container around the iframe is a different thing and is
+what a full-height modal requires.
+
+### Section heading font
+
+Cognito emits two kinds of heading. Section headings carry both classes:
+
+```html
+<h2 class="cog-section__heading cog-heading">Payment</h2>
+```
+
+The payment/order block emits a bare one with no `cog-section__heading`:
+
+```html
+<h2 class="cog-heading">Payment</h2>
+<h2 class="cog-heading">Card Authorization</h2>
+```
+
+`cognito-form.css` originally styled only `.cog-section__heading`, so the bare
+headings fell through to Cognito's default Open Sans Condensed. Both rules (the
+main one and the small-screen font-size override) now target
+`.cog-section__heading, .cog-heading`. Verified in the live iframe: all headings
+compute to Jost 11px uppercase in maroon.
+
+Note that `.cog-heading` also matches the form's `h1` title, which is hidden by
+the `.cog-header` rule, so widening the selector is safe.
+
+**Cosmetic issue not yet resolved:** the Cognito section is named "Payment" and
+the order block Cognito generates is also headed "Payment", so two identical
+headings stack. Renaming the form section (for example to "Complete Your Gift")
+would resolve it.
+
 ### Required test pass before launch
 
 Nothing here is verified until all of these pass:
