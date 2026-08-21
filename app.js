@@ -31,27 +31,61 @@
     return formatMoney(value);
   }
 
-  function parseCampaignCsv(csv) {
-    var rows = csv
-      .trim()
-      .split(/\r?\n/)
-      .map(function (row) {
-        return row.split(",").map(function (cell) {
-          return cell.trim().replace(/^"|"$/g, "");
-        });
-      });
-    var clean = function (value) {
-      return Number(String(value == null ? "" : value).replace(/[^\d.]/g, ""));
-    };
-    var headers = (rows[0] || []).map(function (cell) { return cell.toLowerCase(); });
+  function cleanNumber(value) {
+    return Number(String(value == null ? "" : value).replace(/[^\d.]/g, ""));
+  }
+
+  // Accepts either the data.webmk.co / Google Sheets v4 shape
+  // ({ values: [["Raised","Goal"], ["620000","2295840"]] }) or a plain CSV.
+  // Both are reduced to rows and matched by header name rather than column
+  // index, so the client can reorder columns in the sheet safely.
+  function rowsToTotals(rows) {
+    var headers = (rows[0] || []).map(function (cell) {
+      return String(cell == null ? "" : cell).trim().toLowerCase();
+    });
     var goalIndex = headers.indexOf("goal");
     var raisedIndex = headers.indexOf("raised");
     if (goalIndex >= 0 && raisedIndex >= 0 && rows[1]) {
-      return { goal: clean(rows[1][goalIndex]), raised: clean(rows[1][raisedIndex]) };
+      return { goal: cleanNumber(rows[1][goalIndex]), raised: cleanNumber(rows[1][raisedIndex]) };
     }
+    // Fallback: a two-column "label,value" sheet laid out vertically.
     var keyed = {};
-    rows.forEach(function (row) { keyed[String(row[0] || "").toLowerCase()] = clean(row[1]); });
+    rows.forEach(function (row) {
+      keyed[String(row[0] || "").trim().toLowerCase()] = cleanNumber(row[1]);
+    });
     return { goal: keyed.goal, raised: keyed.raised };
+  }
+
+  // Quote-aware split: a naive row.split(",") corrupts cells like "2,295,840".
+  function splitCsvRow(row) {
+    var cells = [];
+    var current = "";
+    var inQuotes = false;
+    for (var i = 0; i < row.length; i += 1) {
+      var char = row.charAt(i);
+      if (char === '"') {
+        if (inQuotes && row.charAt(i + 1) === '"') { current += '"'; i += 1; }
+        else inQuotes = !inQuotes;
+      } else if (char === "," && !inQuotes) {
+        cells.push(current.trim());
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+    cells.push(current.trim());
+    return cells;
+  }
+
+  function parseCampaignData(text) {
+    var trimmed = text.trim();
+    if (trimmed.charAt(0) === "{" || trimmed.charAt(0) === "[") {
+      var payload = JSON.parse(trimmed);
+      var values = Array.isArray(payload) ? payload : payload.values;
+      if (!Array.isArray(values)) throw new Error("Campaign data JSON has no values array");
+      return rowsToTotals(values);
+    }
+    return rowsToTotals(trimmed.split(/\r?\n/).map(splitCsvRow));
   }
 
   function renderCampaignData(goal, raised) {
@@ -59,6 +93,8 @@
     var percentage = Math.min(Math.round((raised / goal) * 100), 100);
     document.querySelector("[data-raised]").textContent = formatCompactMoney(raised);
     document.querySelector("[data-goal]").textContent = formatCompactMoney(goal);
+    var exactGoal = document.querySelector("[data-goal-exact]");
+    if (exactGoal) exactGoal.textContent = formatMoney(goal);
     document.querySelector("[data-percentage]").textContent = percentage + "%";
     document.querySelector("[data-remaining-compact]").textContent = formatCompactMoney(remaining);
     document.querySelector("[data-remaining]").textContent = formatMoney(remaining);
@@ -74,8 +110,8 @@
         if (!response.ok) throw new Error("Campaign data returned " + response.status);
         return response.text();
       })
-      .then(function (csv) {
-        var data = parseCampaignCsv(csv);
+      .then(function (text) {
+        var data = parseCampaignData(text);
         if (!(data.goal > 0) || !(data.raised >= 0)) throw new Error("Invalid campaign data");
         renderCampaignData(data.goal, data.raised);
       })

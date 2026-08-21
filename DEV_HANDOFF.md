@@ -61,7 +61,7 @@ The closing callout containing “for the children who are not yet born” was r
 
 ```js
 window.CAMPAIGN_CONFIG = {
-  dataUrl: "",
+  dataUrl: "https://data.webmk.co/?id=1U-OxKPvmGWipvQ8w_V5bfoRvFGuVbOOzV0fLHDX0uYY",
   fallbackGoal: 2295840,
   fallbackRaised: 620000,
   showVideo: false,
@@ -70,9 +70,76 @@ window.CAMPAIGN_CONFIG = {
 };
 ```
 
-When `dataUrl` is set, `app.js` fetches a public CSV without caching. Accepted formats are documented in `DEPLOYMENT.md`. If the fetch or validation fails, the fallback totals remain visible and the error is logged to the console.
+### Live totals from a Google Sheet
 
-`showCommittee` currently leaves the “Committee in formation” section visible. Set it to `false` until real names are ready if the placeholder should not launch publicly.
+Raised and goal are fetched at page load from WebMK's JSON proxy in front of the
+Google Sheets API. The client edits the sheet; the site follows. No auth, CORS is
+open, and the endpoint is not CDN-cached (`cf-cache-status: DYNAMIC`).
+
+The sheet's first row is headers and the second row is values:
+
+```json
+{"range":"Sheet1!A1:E300","majorDimension":"ROWS",
+ "values":[["Raised","Goal"],["620000","2295840"]]}
+```
+
+`parseCampaignData()` in `app.js` accepts either that JSON shape or a plain CSV,
+and matches **by header name, not column index**, so the client can reorder the
+sheet's columns safely. Values are stripped of currency formatting, so `$620,000`
+and `620000` both parse. A vertical `label,value` layout also works as a fallback.
+
+CSV parsing is quote-aware. A naive `row.split(",")` corrupts cells like
+`"2,295,840"`; `splitCsvRow()` handles quoted commas and escaped quotes.
+
+### Fallback behaviour
+
+`renderCampaignData()` runs synchronously with `fallbackGoal` / `fallbackRaised`
+before the fetch starts, so the page always shows valid numbers. The fetched
+values only replace them on success. If the fetch fails, the sheet is empty, or
+the parsed goal is not greater than zero, the totals are rejected, the fallback
+stays visible, and a warning is logged. Never let the progress section depend on
+the fetch succeeding.
+
+Keep `fallbackGoal` and `fallbackRaised` roughly current anyway — they are what a
+visitor sees if the sheet is unreachable.
+
+### Elements driven by the fetched totals
+
+| Selector | Shows |
+|---|---|
+| `[data-raised]` | raised, compact (`$620K`) |
+| `[data-goal]` | goal, compact (`$2.3M`) |
+| `[data-goal-exact]` | goal, exact, in the budget breakdown (`$2,295,840`) |
+| `[data-percentage]` | raised / goal, capped at 100% |
+| `[data-remaining-compact]` | goal − raised, compact |
+| `[data-remaining]` | goal − raised, exact |
+| `.progress-track` | `aria-valuenow` and the `--progress` fill width |
+
+`[data-goal-exact]` was added when the sheet was wired up. Without it the budget
+breakdown kept a hardcoded total while the progress bar moved, so the two could
+silently disagree.
+
+### The goal must match the budget breakdown
+
+The budget line items in the giving section are hardcoded and sum exactly to the
+campaign goal:
+
+```
+1,526,500  purchase of the center
+  576,950  renovations, soft costs, furnishings
+  192,390  campaign and first two years of operating
+---------
+2,295,840  total
+```
+
+**The sheet's Goal cell must therefore be 2295840, not 2300000.** As of Aug 21,
+2026 the sheet reads 2300000, which renders a total campaign goal of $2,300,000
+above line items that add to $2,295,840 — a visible $4,160 gap in the one table
+whose whole purpose is transparency. Either correct the sheet cell or change the
+line items to match; do not leave them inconsistent.
+
+$2.3M is fine as the rounded figure in prose and in the compact display, which is
+what `formatCompactMoney()` already produces from 2295840.
 
 ## Cognito Forms integration
 
