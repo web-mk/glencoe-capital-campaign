@@ -130,12 +130,14 @@
   function cognitoEntry(amount, dedication, schedule) {
     var numericAmount = amount ? Number(amount) : 0;
     var presets = [1800, 5400, 18000, 36000];
+    // NOTE: "HowWouldYouLikeToGive" was removed from Cognito form 202 on Aug 21,
+    // 2026 and replaced by "GiftType" in the Payment section. GiftType is
+    // deliberately NOT prefilled — the donor chooses one-time vs. pledge
+    // themselves, and guessing it here would preselect the wrong path.
     var commitment = {
       Dedication: dedication
         ? dedication + " - " + formatMoney(numericAmount)
         : "No dedication, general campaign gift",
-      HowWouldYouLikeToGive:
-        schedule === "now" ? "Give in full today" : "Over " + schedule + " months",
     };
     if (numericAmount) commitment.TotalPledgeAmount = numericAmount;
     if (presets.indexOf(numericAmount) >= 0) commitment.PresetAmount = formatMoney(numericAmount);

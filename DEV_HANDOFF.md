@@ -161,7 +161,13 @@ The root section is `YourCommitment`, containing:
 
 - `PresetAmount`: `$1,800`, `$5,400`, `$18,000`, or `$36,000`.
 - `TotalPledgeAmount`: number.
-- `HowWouldYouLikeToGive`: `Give in full today`, `Over 12 months`, `Over 24 months`, or `Over 36 months`.
+- `GiftType` (in the `Payment` section, NOT `YourCommitment`): `One-time gift`,
+  `Multi-year pledge`, or `Check / stock / DAF`. Deliberately not prefilled by
+  `app.js` — the donor chooses. Replaced the deleted `HowWouldYouLikeToGive`
+  field on Aug 21, 2026.
+- `PaymentMethod` (in the `Payment` section): `Credit Card`, `Check`,
+  `Donor-Advised Fund`, or `Appreciated stock`. Currently only visible when
+  `GiftType = "One-time gift"`.
 - `Dedication`: one of the exact strings below.
 - `InHonorOrMemoryOf`: optional text.
 
@@ -353,6 +359,64 @@ form with a new ID and break the embed URL hardcoded in `index.html` and
 Reading the schema through the MCP is still the fastest way to check state, and
 the live form can be driven in Playwright to verify behaviour. Only the edits
 themselves require the builder.
+
+### Conditional charging: condition the amount, not the requirement
+
+Confirmed by driving the live form on Aug 21, 2026. With an amount entered, the
+order summary showed `Amount Due: $1,800.00` for EVERY gift type, including
+Multi-year pledge, even though `RequirePayment` was correctly conditional and no
+card element rendered.
+
+Cause: **Collect Payment on a Currency field is an unconditional checkbox.**
+
+```json
+"TotalPledgeAmount": { "DataType": "Currency", "CollectPayment": true }
+```
+
+That field contributes a line item to the order on every submission. Process
+Payment (`RequirePayment`) then only decides whether a card is demanded for an
+order that already exists. So the order summary always renders.
+
+Cognito cannot conditionally collect on a Currency field — only conditionally
+require payment on an order. The fix is to move the charge to a Price field whose
+AMOUNT is conditional:
+
+1. Turn **Collect Payment OFF** on `Total pledge amount`, making it a plain data
+   field. Leaving it on while adding the Price field will bill twice.
+2. Add a **Price** field and set its amount to a calculation. Type `=` in the
+   amount box to switch from a literal to a formula. Cognito's syntax is
+   `if … then … else`, not a function call:
+
+   ```
+   =if Payment.PaymentMethod = "Credit Card" then YourCommitment.TotalPledgeAmount else 0
+   ```
+
+Use **section-qualified paths**. A bare `TotalPledgeAmount` may not resolve from
+inside the Payment section. Prefer the formatting toolbar's insert-field control
+over typing names by hand — calculations use the field's internal name (spaces
+and punctuation stripped), and hand-written expressions are what introduced the
+earlier `SaveCustomerCard` null bug.
+
+The conditional logic builder cannot do this. Its value box accepts literals
+only, which is why `TotalPledgeAmount` does not appear as a selectable option
+there.
+
+### Open: GiftType and PaymentMethod overlap
+
+`GiftType` includes `Check / stock / DAF`, but `PaymentMethod` is only visible
+when `GiftType = "One-time gift"`. So when a donor selects the Check/stock/DAF
+gift type, the form never captures WHICH vehicle they intend. Suggested split:
+
+```
+Gift Type:       One-time gift | Multi-year pledge
+Payment Method:  Credit Card | Check | Donor-Advised Fund | Appreciated stock   (always visible)
+```
+
+Then Process Payment becomes:
+`=(Payment.PaymentMethod = "Credit Card" and Payment.GiftType = "One-time gift")`
+
+Also stale: the `Total pledge amount` help text still reads "Payment is collected
+only when you select 'Give in full today'", referencing the deleted field.
 
 ### Required test pass before launch
 
