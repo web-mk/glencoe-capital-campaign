@@ -155,42 +155,80 @@ The iframe ID is `cognito-pledge-frame`. Do not change it without updating every
 
 ### Field names and exact choice values
 
-Cognito prefill values must match the schema exactly.
+Current as of Cognito form 202 **schema Version 27, Aug 21, 2026**. The form was
+restructured substantially on Aug 21; several earlier field names in this file's
+history no longer exist. Re-read the schema through the MCP after any builder
+session — `get_form_schema` with formId 202 — and reconcile `app.js` against it.
 
-The root section is `YourCommitment`, containing:
+**Prices now live on the choice options themselves.** There is no longer a
+free-text amount field in the main path.
 
-- `OtherAmounts` (renamed from `PresetAmount` on Aug 21, 2026): `$1,800`,
-  `$5,400`, `$18,000`, or `$36,000`. Now has fill-in enabled.
-- `TotalPledgeAmount`: number.
-- `GiftType` (in the `Payment` section, NOT `YourCommitment`): `One-time gift`,
-  `Multi-year pledge`, or `Check / stock / DAF`. Deliberately not prefilled by
-  `app.js` — the donor chooses. Replaced the deleted `HowWouldYouLikeToGive`
-  field on Aug 21, 2026.
-- `PaymentMethod` (in the `Payment` section): `Credit Card`, `Check`,
-  `Donor-Advised Fund`, or `Appreciated stock`. Currently only visible when
-  `GiftType = "One-time gift"`.
-- `Dedication`: one of the exact strings below.
-- `InHonorOrMemoryOf`: optional text.
+`YourCommitment` section:
 
-Exact dedication values:
+- `Dedication` — Choice, `ChoiceHasPrice: true`, rendered as cards. Labels are
+  **bare names**, with the price carried separately:
+  `Sanctuary` (360000), `Kiddush / Program Room` (250000), `Aron Kodesh` (180000),
+  `Hebrew School Wing` (150000), `Kitchen` (120000),
+  `Rabbi's Study, Porch, Patio` (100000), `Classroom, Executive Office` (54000),
+  `Bimah` (36000), `Podium, Talis Rack` (18000), `Shul Bookshelf` (10000),
+  `Mezuzah` (5400), `Dedicate a Brick` (1800),
+  `No dedication, general campaign gift` (no price).
+- `OtherAmounts` — Choice, `ChoiceHasPrice: true`, radio buttons:
+  `$1,800`, `$5,400`, `$18,000`, `$36,000`, `Other` (price 0).
+- `OtherAmount` — Currency, visible only when `OtherAmounts = "Other"`.
+- `InHonorOrMemoryOf` — text.
 
-- `No dedication, general campaign gift`
-- `Sanctuary - $360,000`
-- `Kiddush / Program Room - $250,000`
-- `Aron Kodesh - $180,000`
-- `Hebrew School Wing - $150,000`
-- `Kitchen - $120,000`
-- `Rabbi's Study, Porch, Patio - $100,000`
-- `Classroom, Executive Office - $54,000`
-- `Bimah - $36,000`
-- `Podium, Talis Rack - $18,000`
-- `Shul Bookshelf - $10,000`
-- `Mezuzah - $5,400`
-- `Dedicate a Brick - $1,800`
+`Payment` section:
 
-ACTION REQUIRED IN COGNITO: the `Dedication` choice `Bimah, Entrance Mezuzah - $36,000` must be renamed to `Bimah - $36,000`. The entrance mezuzah has been privately committed and was removed from the page on Aug 20, 2026. Until Cognito is updated, selecting Bimah will fail to preselect.
+- `ANoteToRabbiSholom` — text.
+- `GiftType` — `One-time gift`, `Multi-year pledge`, `Check / stock / DAF`.
+- `PaymentMethod` — `Credit Card`, `Check`, `Donor-Advised Fund`,
+  `Appreciated stock`. Visible only when `GiftType = "One-time gift"`.
+- `Total` — **Price** field, `CollectPayment: true`, visible when
+  `PaymentMethod = "Credit Card"`:
+  `=Form.YourCommitment.Dedication_Price + Form.YourCommitment.OtherAmounts_Price + Form.YourCommitment.OtherAmount`
 
-If a dedication name or amount changes in either Cognito or `index.html`, update both sides. `cognitoEntry()` constructs the option string from `data-dedication` plus the formatted `data-amount` value.
+### Fields that were deleted — do not reference them
+
+- `TotalPledgeAmount` (Currency) — removed. Replaced by prices on choice options.
+- `PresetAmount` — renamed to `OtherAmounts`.
+- `HowWouldYouLikeToGive` — removed. Replaced by `GiftType`.
+
+Each of these silently broke the site's prefill when it changed: an unknown field
+name in the `entry` payload causes the whole prefill to be ignored, so nothing
+preselects and the failure is invisible until someone clicks a dedication button.
+
+### How app.js prefills against this model
+
+Two rules, both load-bearing:
+
+1. **Send the bare dedication label.** `"Sanctuary"`, never
+   `"Sanctuary - $360,000"`. The label no longer contains the amount, so
+   appending it means nothing matches.
+2. **Never send an amount alongside a dedication.** The dedication already
+   carries its price, and `Total` sums `Dedication_Price + OtherAmounts_Price +
+   OtherAmount`, so setting both double-charges.
+
+Amount-only buttons (the recognition tiers) map to `OtherAmounts` when the value
+is one of the four presets, otherwise to `"Other"` plus a numeric `OtherAmount`.
+That covers the $250,000 and $100,000 tiers, which have no preset option.
+
+Verified in a real browser: Sanctuary preselects and totals $360,000; Mezuzah
+totals $5,400; the $1,800 tier ticks the preset and totals $1,800.
+
+### Choice option price display
+
+The duplicated `$1,800 - $1,800.00` labels come from prices being displayed on a
+field whose labels already contain the amount. The setting is
+**"Show Prices in Choice Field"**, in the field's **Choice Options** section
+(alongside Collect Payment, Assign Prices, Assign Values, Limit Quantities, Show
+Images). It requires a single-selection type — Drop Down, Radio Buttons, or Cards.
+
+- `OtherAmounts` — turn **off**. Labels already state the amount.
+- `Dedication` — leave **on**. Labels are bare names; donors need the figure.
+
+Purely cosmetic: the price still applies to the order either way. Note that a
+choice field set to display prices does not show them when read-only.
 
 ### Why prefill uses the iframe URL
 
@@ -241,69 +279,52 @@ Cognito MCP, and the live public form driven in a real browser.
 
 ### What is already done
 
-Payment was switched on between Aug 20 and Aug 21 (schema Version 5 to 7):
+As of Aug 21, 2026 (schema Version 27), the following are resolved and verified:
 
-```json
-"TotalPledgeAmount": { "DataType": "Currency", "CollectPayment": true },
-"PaymentEnabled": true,
-"PaymentAccount": { "Name": "Chabad of Glencoe", "ProcessorName": "Stripe" },
-"PaymentMode": "Live"
-```
+- `PaymentEnabled: true`, Stripe connected (`Chabad of Glencoe`), `PaymentMode: Live`.
+- **Process Payment** (`RequirePayment`) is conditional:
+  `=(Payment.PaymentMethod = "Credit Card")`.
+- **Keep Card on File** (`SaveCustomerCard`) is `"false"`. This removed the
+  "Card Authorization" heading, the required consent checkbox, and the
+  `rebuildOrderRule` console error.
+- **Processing fees are OFF** (`IncludeProcessingFees: false`). Donors are no
+  longer surcharged; an $1,800 gift bills $1,800.
+- The charge is a **Price** field (`Total`) whose amount is conditional, so
+  pledges, checks, DAF and stock gifts submit with no order and no card fields.
+- `Dedication` renamed `Bimah, Entrance Mezuzah` to `Bimah`; the entrance
+  mezuzah was privately committed and is off the page.
+- The generated instructional Content blocks are gone.
+- A `PaymentMethod` field exists, with DAF and appreciated stock as options.
 
-Stripe is connected and the order builds correctly. Entering $1,800 produces a
-real order with a Stripe card element. **The card fields are not missing.**
+Verified end to end in a browser: selecting a dedication preselects it, the
+Stripe card element renders, and the order totals correctly ($360,000 for
+Sanctuary, $5,400 for Mezuzah).
 
-An earlier working assumption in this project — that `TotalPledgeAmount` was a
-Number field and a separate Price field had to be added — was wrong. Currency
-fields carry their own `CollectPayment` property. Note that Cognito's public
-documentation presents the Price field as the payment-collecting field type and
-does not clearly document `CollectPayment` on Currency fields. **The live schema
-is authoritative here, not the docs.**
+### Still open
 
-### Four problems remain, all live right now
+1. **Workflow status is wrong.** `Submit Commitment` has `AllowedWhen: "true"`
+   and `NewStatus: 2` ("Pledge Recorded"), and the three internal actions
+   (`Mark Payment Received`, `Mark Pledge Recorded`, `Request Follow-up`) are all
+   `IsDeleted: true`. Every submission — including a completed credit-card
+   payment — files as a pledge, and there is no action to mark payment received.
+   The entry data cannot distinguish paid from promised. Confirm whether this is
+   deliberate; if not, restore the internal actions and set Submit Commitment
+   back to `Incomplete`.
+2. **`PriceItemName` is `"="`** — an empty formula, so the order line item and
+   the receipt render with no name. Set it to a literal such as
+   `Capital Campaign Gift`.
+3. **"Show Prices in Choice Field"** should be turned off on `OtherAmounts`;
+   see the Cognito Forms integration section above.
+4. **Section naming.** The Cognito section is called "Payment" and the order
+   block Cognito generates is also headed "Payment", so two identical headings
+   stack. Renaming the section (for example "Complete Your Gift") resolves it.
+5. **Stale help text** may remain on fields referencing deleted options.
 
-Observed on the public form with $1,800 entered:
+### What cannot be fixed from CSS
 
-```
-Card Authorization  *(required)
-[ ] I agree to save my card for future transactions.
-
-Total pledge amount   $1,800.00
-Subtotal:             $1,800.00
-Processing Fees:         $54.07
-Amount Due:           $1,854.07
-```
-
-**1. The section renders as "Card Authorization", not a payment.** Caused by:
-
-```json
-"SaveCustomerCard": "=(!YourCommitment.HowWouldYouLikeToGive.Contains(\"full\"))"
-```
-
-On a fresh load nothing is selected, so `HowWouldYouLikeToGive` is null,
-`null.Contains("full")` is false, the `!` flips it true, and Cognito switches the
-whole section into save-card-for-later mode. This null case is also the most
-likely source of the browser console error:
-
-```
-Error encountered while running rule
-"Forms.FormEntry.SholomWolberg.ChabadOfGlencoeCapitalCampaign20262027.rebuildOrderRule"
-```
-
-**2. The save-card consent checkbox is required.** `.cog-payment__save-card` has
-`is-required`. No donor can submit without agreeing to let Chabad of Glencoe
-charge their card for future payments — including someone giving once today. This
-contradicts the form's own copy, which says installments are "recorded as a
-pledge for campaign-team follow-up."
-
-**3. Processing fees are passed to the donor.** `IncludeProcessingFees: true`
-turns an $1,800 gift into $1,854.07 due. This was inherited from the generated
-form, not chosen. Decide deliberately: absorb the roughly 3 percent, or present
-it as an opt-in checkbox. Silently surcharging donations will generate
-complaints.
-
-**4. `RequirePayment` is hardcoded `"true"`.** Every submission demands a card,
-so the Check and Other pledge paths the client asked for cannot work.
+The Stripe card input renders inside its own cross-origin frame. Its text size
+is Stripe's, and injected CSS cannot reach it. The payment section's own labels
+were nudged to 15px to narrow the visual gap; that is as close as it gets.
 
 ### Where these settings actually live in the builder
 
@@ -327,27 +348,6 @@ existing `SaveCustomerCard` expression got in.
 
 Keep Card on File is a Team/Enterprise plan feature.
 
-### Fixes, in order
-
-1. **Set Keep Card on File (`SaveCustomerCard`) to `Never`.** Not a smarter formula — off. The page
-   copy already promises installments are follow-up pledges, so nothing should be
-   saving cards. This one change removes the "Card Authorization" heading, the
-   required consent checkbox, and the likely console error together.
-2. **Set Process Payment (`RequirePayment`) to "When".** Build the condition with the
-   Conditional Logic Builder's dropdowns. Use explicit equality rather than
-   `.Contains()`, so an unselected field cannot produce the same null bug:
-   `=(YourCommitment.HowWouldYouLikeToGive = "Give in full today")`
-   Add `and YourCommitment.PaymentMethod = "Credit Card"` once that field exists.
-3. **Add a `PaymentMethod` Choice field** (Credit Card / Check / Other). It does
-   not exist yet; the client asked for it.
-4. **Decide on processing fees** before any real gift is taken.
-5. **Rename the `Dedication` choice** `Bimah, Entrance Mezuzah - $36,000` to
-   `Bimah - $36,000`. The entrance mezuzah was privately committed and is already
-   removed from the page. Until Cognito matches, that button will not preselect.
-6. **Delete the three instructional Content blocks** in the Payment section
-   ("Secure payment note", "Complete My Commitment", "Confirmation message") once
-   real workflow copy is configured.
-
 ### Why this cannot be automated from here
 
 The Cognito MCP exposes `get_forms`, `get_form_schema`, entry CRUD, `get_file`,
@@ -362,6 +362,12 @@ the live form can be driven in Playwright to verify behaviour. Only the edits
 themselves require the builder.
 
 ### Conditional charging: condition the amount, not the requirement
+
+> HISTORICAL. This documents why conditioning Process Payment alone was not
+> enough, using the `TotalPledgeAmount` Currency field that existed at the time.
+> That field has since been deleted and prices moved onto the choice options,
+> but the underlying lesson still applies: Collect Payment on a Currency field is
+> an unconditional checkbox, so the charge must be conditioned on the amount.
 
 Confirmed by driving the live form on Aug 21, 2026. With an amount entered, the
 order summary showed `Amount Due: $1,800.00` for EVERY gift type, including
@@ -421,26 +427,47 @@ only when you select 'Give in full today'", referencing the deleted field.
 
 ### Modal scrolling
 
-The form grew past the viewport once Gift Type, Payment Method, the Price field
-and the Stripe card element were added (roughly 1,470px of modal in a 741px
-viewport during testing). It became impossible to scroll to the submit button.
+**The iframe scrolls its own document. The modal does not scroll.**
 
-The iframe auto-resize is NOT the problem and works correctly — measured growing
-1102px to 1107px to 1181px as fields appeared. The problem was that the only
-scroll container was `.modal-backdrop`, sitting *behind* an iframe that filled
-the panel. Wheel events land on the iframe's document, which has no overflow of
-its own, so there was nothing to scroll against.
+An earlier fix made the surrounding modal the scroll container. That was wrong,
+and it looked correct while still being broken: it only slid a too-short iframe
+around.
 
-Fix: `.modal-panel` is now a flex column capped at
-`calc(100dvh - 2 * clamp(12px, 3vw, 48px))`, `.modal-header` is sticky and
-`flex: none`, and `#cognito-form` is the scroll container
-(`flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain`). Scrolling
-over the iframe chains to that container once the iframe has no further scroll.
+The real cause: Cognito's `iframe.js` sizes the iframe from **its own**
+measurement of the content, but the stylesheet injected through `setCss()`
+reflows that content taller afterwards — two-column dedication cards, larger
+payment labels — and Cognito never re-measures. Combined with `scrolling="no"`,
+the difference was unreachable. Measured with a dedication selected and the card
+fields rendered:
 
-This is NOT the nested-scroll pattern warned against elsewhere in this file. That
-warning is about adding a fixed-height scroll area *inside* the Cognito form (the
-dedication list). A scroll container around the iframe is a different thing and is
-what a full-height modal requires.
+```
+iframe rendered:  1059px   (Cognito's stale height attribute)
+inner document:   1644px
+stranded:          585px   including the submit button
+```
+
+Current arrangement:
+
+- `.modal-panel` — flex column with a **definite** `height:
+  calc(100dvh - 2 * clamp(12px, 3vw, 48px))`. It must be `height`, not
+  `max-height`: `height: 100%` on the iframe cannot resolve through the flex
+  chain against an indefinite parent, and the iframe collapses to about 150px.
+- `.modal-header` — sticky, `flex: none`.
+- `#cognito-form` — `display: flex; flex: 1 1 auto; min-height: 0;
+  overflow: hidden`. It is NOT the scroll container.
+- `.cognito-frame` — `height: 100% !important`. The `!important` is required to
+  beat the `height` attribute Cognito rewrites on every resize.
+- `app.js` re-asserts `scrolling="yes"` on every iframe `load`, because
+  `iframe.js` resets it to `"no"`.
+
+Do not reintroduce a fixed `height` attribute on the iframe in `index.html`, and
+do not make `#cognito-form` scrollable again — two nested scroll surfaces trap
+the wheel gesture.
+
+Verified with a real `mouse.wheel` gesture over the iframe that the submit button
+becomes reachable. Note that measuring `scrollHeight` on the container is NOT
+sufficient verification; it reports a scrollable container while the content is
+still clipped inside a short iframe.
 
 ### Section heading font
 
@@ -507,7 +534,9 @@ After any form or styling change, verify at desktop and mobile widths:
 - Every dedication is visible without nested scrolling.
 - Each dedication card on the page selects the exact matching Cognito option.
 - Recognition amounts populate the amount and general-gift option.
-- Amounts outside the four presets still populate `TotalPledgeAmount` without selecting an incorrect preset.
+- Amounts outside the four presets select `OtherAmounts: "Other"` and populate a numeric `OtherAmount`.
+- Selecting a dedication does NOT also set an amount (that would double the total).
+- The submit button is reachable by scrolling with the cursor over the iframe.
 - Modal close, Escape, backdrop click, and focus return work.
 - The iframe resizes enough to expose the submit button.
 - Mobile uses one column where intended and has no horizontal overflow.
