@@ -140,7 +140,8 @@
         : "No dedication, general campaign gift",
     };
     if (numericAmount) commitment.TotalPledgeAmount = numericAmount;
-    if (presets.indexOf(numericAmount) >= 0) commitment.PresetAmount = formatMoney(numericAmount);
+    // Renamed from "PresetAmount" to "OtherAmounts" in Cognito form 202 on Aug 21, 2026.
+    if (presets.indexOf(numericAmount) >= 0) commitment.OtherAmounts = formatMoney(numericAmount);
     return { YourCommitment: commitment };
   }
 

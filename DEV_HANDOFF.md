@@ -159,7 +159,8 @@ Cognito prefill values must match the schema exactly.
 
 The root section is `YourCommitment`, containing:
 
-- `PresetAmount`: `$1,800`, `$5,400`, `$18,000`, or `$36,000`.
+- `OtherAmounts` (renamed from `PresetAmount` on Aug 21, 2026): `$1,800`,
+  `$5,400`, `$18,000`, or `$36,000`. Now has fill-in enabled.
 - `TotalPledgeAmount`: number.
 - `GiftType` (in the `Payment` section, NOT `YourCommitment`): `One-time gift`,
   `Multi-year pledge`, or `Check / stock / DAF`. Deliberately not prefilled by
