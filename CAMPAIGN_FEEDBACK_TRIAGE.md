@@ -73,6 +73,15 @@ matching top and bottom. Only console error is a pre-existing missing favicon.
 | 2 | "100% locally funded" moved from footer-only to under the progress stats, gold rule, styled as a statement not a disclaimer |
 | 16 | Campaign budget breakdown kept unchanged, as agreed |
 
+### Added Aug 21, 2026
+
+| Item | Change |
+|---|---|
+| — | Campaign totals now fetched live from a Google Sheet the office edits; budget breakdown reconciles to the goal automatically |
+| 15 | Payment flow completed — see "HIS #15 — RESOLVED" below |
+| 13 | Building Dedication briefly relabelled "By Conversation" after confirming the client never wrote "Reserved"; reverted once Mendel confirmed it genuinely is reserved |
+| — | Embedded form fixed: submit button was unreachable, dedication cards were crushed to 212px, selected-state badge was clipped, headings and payment labels restyled |
+
 ### Why #11 mattered
 The site genuinely had TWO competing systems: four dedication groups AND a
 separate ten-level recognition wall. That was real confusion, not a preference.
@@ -94,9 +103,8 @@ Collapsing to four is a genuine simplification.
    currently reads "Accessible entry, ramp, outdoor porch and patio." Quietly
    deleting accessibility from a community building is not a silent call. If the
    renovation genuinely has no ramp, remove it; if it does, keep it.
-3. **Cognito needs a matching edit.** `Dedication` choice
-   `Bimah, Entrance Mezuzah - $36,000` must become `Bimah - $36,000` or that
-   button stops preselecting. Flagged in DEV_HANDOFF.md.
+3. ~~**Cognito needs a matching edit** for the Bimah dedication.~~ RESOLVED
+   Aug 21, 2026. Renamed in Cognito and verified preselecting from the page.
 4. **Lost entry points.** Collapsing the wall removed one-click $3,600, $5,400,
    $10,000, $36,000, $54,000, $72,000. Dedication columns still cover most, but
    **$3,600 is gone entirely** — was the lowest rung above $1,800. Confirm OK.
@@ -177,63 +185,50 @@ Collapsing to four is a genuine simplification.
 
 ---
 
-## THE ACTUAL LAUNCH BLOCKER (his #15)
+## HIS #15 — RESOLVED (Aug 21, 2026)
 
-He framed a credit-card option as a preference. It is the gate. The page copy
-says "Pledge by credit card" and the form cannot currently take one.
+He framed a credit-card option as a preference. It was in fact the launch gate:
+the page said "pledge by credit card" and the form could not take one. Stripe was
+connected but nothing was switched on to use it.
 
-**Verified against the live schema via the Cognito MCP on Aug 20, 2026.** Full
-technical detail is in DEV_HANDOFF.md under "Payment launch blocker". Summary:
+**This is now working and verified end to end in a browser.**
 
-- `TotalPledgeAmount` is already a **Currency** field with `CollectPayment: false`.
-  That single property is the blocker. An earlier working assumption in this
-  session — that it was a Number field needing a new Price field added — was
-  wrong. No new field is needed for the charge itself.
-- **Stripe is already connected** (`PaymentAccount: Chabad of Glencoe / Stripe`,
-  `PaymentMode: Live`). `PaymentEnabled: false` at the form level.
-- `RequirePayment` is hardcoded `"true"`, which would demand a card on EVERY
-  submission and break the Check/Other pledge paths. It needs a formula. The form
-  already contains a working formula example in `SaveCustomerCard`.
-- **No `PaymentMethod` field exists** — his Credit Card / Check / Other selector
-  must be created.
-- The `Dedication` enum still reads `Bimah, Entrance Mezuzah - $36,000` and must
-  be renamed to `Bimah - $36,000` or the site's Bimah button stops preselecting.
+- Credit card gifts charge through Stripe.
+- Check, Donor-Advised Fund and appreciated-stock commitments submit as pledges
+  with no card demanded — exactly what he asked for.
+- Multi-year pledges submit as pledges, no card, no order.
+- Processing fees are OFF: an $1,800 gift bills $1,800, not $1,854.07.
+- The form no longer requires every donor to consent to storing their card.
+- Dedication buttons on the page carry the dedication and amount into the form.
+  Verified: Sanctuary totals $360,000, Mezuzah totals $5,400.
 
-### The Cognito MCP is read-only for this
+The form was restructured along the way — prices now live on the choice options
+rather than in a separate amount field, and `TotalPledgeAmount`, `PresetAmount`
+and `HowWouldYouLikeToGive` no longer exist. Full technical detail, including the
+prefill rules that keep the site in sync, is in `DEV_HANDOFF.md` under "Cognito
+Forms integration" and "Payment launch blocker".
 
-Tools available: get_forms, get_form_schema, entry CRUD, get_file, get_document,
-set_form_availability, generate_form, save_generated_form. **There is no
-update-form tool.** `save_generated_form` creates a NEW form with a new ID, which
-would break the embed URL hardcoded in index.html and app.js. Do not use it on
-form 202. Reading the schema is still much faster and more accurate than clicking
-through the builder.
+### Still open in Cognito (not client-facing)
 
-MCP setup notes are in DEV_HANDOFF.md and in the mcp-static-client-id memory.
+1. **Workflow status.** Every submission files as "Pledge Recorded", including a
+   completed card payment, and the internal actions are deleted. The entry data
+   cannot distinguish paid from promised.
+2. `PriceItemName` is an empty formula, so the order line item and receipt render
+   with no name.
+3. "Show Prices in Choice Field" should be off for `OtherAmounts`, whose labels
+   already state the amount.
+4. The Cognito section and the generated order block are both headed "Payment",
+   so two identical headings stack.
 
-### Builder steps
+### Decision still needed from the client
 
-1. `Total pledge amount` → enable **Collect payment**
-2. Add Choice field `PaymentMethod`: Credit Card / Check / Other
-3. **Require payment** → formula, approximately:
-   `=(YourCommitment.HowWouldYouLikeToGive = "Give in full today") and (YourCommitment.PaymentMethod = "Credit Card")`
-4. Rename Dedication choice to `Bimah - $36,000`
-5. Delete the three generated instructional Content blocks in the Payment section
-
-**Untested:** whether a Currency field with Collect Payment on still allows
-submission when Require Payment evaluates false. If it insists on a card anyway,
-condition the charged amount rather than the requirement. Test a Check pledge
-before trusting it.
-
-MUST TEST: Check pledge, Other pledge, installment pledge, one small live card
-gift, confirmation email, internal entry data.
-
-Docs (note: Cognito's public docs describe Price as the payment field type and do
-not clearly document CollectPayment on Currency fields — the live schema is the
-authority):
-https://www.cognitoforms.com/support/3/collecting-payment
-https://www.cognitoforms.com/support/38/building-forms/form-field-reference/price-field
-
----
+**Multi-year pledges: follow-up pledges, or cards charged automatically?** The
+site currently promises the former, and the form is built that way. Cognito
+cannot do recurring billing natively — the only automated path is storing cards
+and creating subscriptions manually in Stripe. Recommendation is to keep pledges
+as follow-up: card fees on large multi-year gifts are significant, cards expire
+inside a 36-month schedule, and gifts at this level normally arrive by check,
+DAF or stock anyway.
 
 ## ALSO BUILT SINCE THE FEEDBACK (Aug 20–21, 2026)
 
@@ -375,7 +370,9 @@ Structure: agree loudly on ~12 items, then spend capital on exactly three:
 2. No sticky sidebar — offer the better alternative rather than refusing
 3. Section count — frame it as protecting the design he already loves
 
-Open with the payment blocker; it reframes the whole email around what actually
-stands between him and launching. Close with a "what I need from you" list —
+NOTE (Aug 21, 2026): the original advice here was to open with the payment
+blocker. That is now resolved, so the draft reply above instead opens with his
+two strongest catches and reports the working payment flow as a win. Payment is
+no longer what stands between him and launching — photographs are. Close with a "what I need from you" list —
 photos, confirmed donor names, renderings, video — so the four blocked items
 visibly return to his court.
