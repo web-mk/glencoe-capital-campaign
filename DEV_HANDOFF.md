@@ -1,6 +1,6 @@
 # Developer handoff
 
-Last updated: August 19, 2026
+Last updated: August 21, 2026
 
 This document records the implementation state, technical decisions, integration details, known risks, and verification steps for future development. It is a decision-oriented handoff rather than a transcript of private internal reasoning.
 

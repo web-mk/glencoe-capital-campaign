@@ -1,4 +1,6 @@
-# Client feedback triage — Aug 20, 2026
+# Client feedback triage
+
+**Feedback received:** Aug 20, 2026 · **Last updated:** Aug 21, 2026
 
 Rabbi Sholom Wolberg reviewed the campaign site and sent 18 numbered edits,
 stating he developed them "after a few chats with ChatGPT." This file records
