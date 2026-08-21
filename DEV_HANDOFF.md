@@ -512,6 +512,43 @@ After any form or styling change, verify at desktop and mobile widths:
 - Mobile uses one column where intended and has no horizontal overflow.
 - Submission, payment/pledge routing, confirmation page, confirmation email, and entry values work in Cognito.
 
+## Asset cache busting
+
+`index.html` loads `src/styles.css`, `site-config.js` and `app.js` with a
+`?v=YYYYMMDD` query string:
+
+```html
+<link rel="stylesheet" href="src/styles.css?v=20260821" />
+<script src="site-config.js?v=20260821" defer></script>
+<script src="app.js?v=20260821" defer></script>
+```
+
+**Bump the version whenever any of those three files changes.** All three share
+one token; there is no need to track them separately.
+
+This exists because browser caching repeatedly produced false bug reports during
+development. A CSS fix would be verified as correct in one browser session and
+then appear completely broken in another, because the old stylesheet was still
+being served. A normal refresh does not clear it; only a hard reload
+(Cmd+Shift+R) or DevTools with "Disable cache" enabled does. Playwright's
+`page.reload()` does NOT bypass the cache either, so automated verification can
+be fooled the same way — force fresh headers when testing a CSS change.
+
+Quick check that a stylesheet actually loaded, from the browser console:
+
+```js
+getComputedStyle(document.getElementById('cognito-form')).overflowY
+// "auto"    = current stylesheet
+// "visible" = stale cache
+```
+
+`cognito-form.css` does not need a version token. `app.js` fetches it with
+`cache: "no-store"` and injects it through Cognito's `setCss()` API, so it is
+never served from the browser cache.
+
+Note that a CDN in front of this site will cache these files too. See the
+deployment notes below on purging after form-related changes.
+
 ## Deployment notes
 
 The project can be deployed to any static host. Upload the files without changing their relative paths. HTTPS is required for production payment behavior.
